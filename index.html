@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Governance Gap Checker | Vyken Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg: #080c18;
+--bg2: #0e1525;
+--bg3: #141d30;
+--cyan: #00d4ff;
+--cyan-dim: rgba(0,212,255,0.12);
+--cyan-glow: rgba(0,212,255,0.25);
+--purple: #7b61ff;
+--white: #ffffff;
+--gray: #8899aa;
+--gray-light: #bbc8d4;
+--red: #ff4d6d;
+--green: #00e5a0;
+--orange: #ffaa00;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(--bg);
+color: var(--white);
+font-family: 'DM Sans', sans-serif;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* Background grid */
+body::before {
+content: '';
+position: fixed;
+inset: 0;
+background-image:
+linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+background-size: 60px 60px;
+pointer-events: none;
+z-index: 0;
+}
+
+.container {
+max-width: 760px;
+margin: 0 auto;
+padding: 40px 24px 80px;
+position: relative;
+z-index: 1;
+}
+
+/* Header */
+.header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 60px;
+}
+
+.logo {
+font-family: 'Syne', sans-serif;
+font-weight: 800;
+font-size: 15px;
+letter-spacing: 0.15em;
+color: var(--cyan);
+text-transform: uppercase;
+}
+
+.logo span {
+color: var(--gray);
+font-weight: 400;
+}
+
+.badge {
+font-size: 11px;
+font-weight: 500;
+color: var(--cyan);
+border: 1px solid var(--cyan-glow);
+padding: 4px 12px;
+border-radius: 20px;
+background: var(--cyan-dim);
+letter-spacing: 0.05em;
+}
+
+/* Screen management */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* Intro screen */
+.intro-tag {
+display: inline-block;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(--cyan);
+border: 1px solid var(--cyan-glow);
+padding: 6px 14px;
+border-radius: 4px;
+margin-bottom: 32px;
+background: var(--cyan-dim);
+}
+
+.intro-title {
+font-family: 'Syne', sans-serif;
+font-size: clamp(36px, 6vw, 58px);
+font-weight: 800;
+line-height: 1.05;
+margin-bottom: 24px;
+letter-spacing: -0.02em;
+}
+
+.intro-title .accent { color: var(--cyan); }
+
+.intro-sub {
+font-size: 17px;
+line-height: 1.7;
+color: var(--gray-light);
+max-width: 540px;
+margin-bottom: 48px;
+}
+
+.stat-row {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+gap: 16px;
+margin-bottom: 48px;
+}
+
+.stat-card {
+background: var(--bg2);
+border: 1px solid rgba(0,212,255,0.1);
+border-radius: 12px;
+padding: 20px 18px;
+}
+
+.stat-num {
+font-family: 'Syne', sans-serif;
+font-size: 28px;
+font-weight: 800;
+color: var(--cyan);
+margin-bottom: 6px;
+}
+
+.stat-label {
+font-size: 12px;
+color: var(--gray);
+line-height: 1.4;
+}
+
+.btn {
+display: inline-flex;
+align-items: center;
+gap: 10px;
+background: var(--cyan);
+color: var(--bg);
+font-family: 'Syne', sans-serif;
+font-weight: 700;
+font-size: 15px;
+padding: 16px 32px;
+border-radius: 8px;
+border: none;
+cursor: pointer;
+letter-spacing: 0.03em;
+transition: all 0.2s;
+text-decoration: none;
+}
+
+.btn:hover {
+background: #fff;
+transform: translateY(-2px);
+box-shadow: 0 8px 30px rgba(0,212,255,0.3);
+}
+
+.btn-ghost {
+background: transparent;
+color: var(--cyan);
+border: 1.5px solid var(--cyan);
+}
+
+.btn-ghost:hover {
+background: var(--cyan-dim);
+color: var(--cyan);
+}
+
+.btn-large {
+padding: 18px 40px;
+font-size: 16px;
+width: 100%;
+justify-content: center;
+}
+
+/* Progress bar */
+.progress-wrap {
+margin-bottom: 40px;
+}
+
+.progress-top {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+}
+
+.progress-label {
+font-size: 12px;
+color: var(--gray);
+letter-spacing: 0.08em;
+text-transform: uppercase;
+}
+
+.progress-count {
+font-family: 'Syne', sans-serif;
+font-size: 13px;
+font-weight: 700;
+color: var(--cyan);
+}
+
+.progress-bar {
+height: 3px;
+background: var(--bg3);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+background: var(--cyan);
+border-radius: 2px;
+transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+box-shadow: 0 0 8px var(--cyan);
+}
+
+/* Question card */
+.q-number {
+font-family: 'Syne', sans-serif;
+font-size: 11px;
+font-weight: 700;
+color: var(--cyan);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+margin-bottom: 16px;
+}
+
+.q-text {
+font-family: 'Syne', sans-serif;
+font-size: clamp(20px, 3.5vw, 28px);
+font-weight: 700;
+line-height: 1.3;
+margin-bottom: 12px;
+letter-spacing: -0.01em;
+}
+
+.q-hint {
+font-size: 14px;
+color: var(--gray);
+line-height: 1.6;
+margin-bottom: 36px;
+}
+
+.answer-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+margin-bottom: 32px;
+}
+
+.answer-btn {
+padding: 18px 24px;
+border-radius: 10px;
+border: 1.5px solid rgba(255,255,255,0.08);
+background: var(--bg2);
+color: var(--white);
+font-family: 'Syne', sans-serif;
+font-weight: 600;
+font-size: 16px;
+cursor: pointer;
+transition: all 0.2s;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.answer-btn:hover { border-color: var(--cyan); background: var(--cyan-dim); }
+.answer-btn.yes:hover { border-color: var(--green); background: rgba(0,229,160,0.08); color: var(--green); }
+.answer-btn.no:hover { border-color: var(--red); background: rgba(255,77,109,0.08); color: var(--red); }
+.answer-btn.selected-yes { border-color: var(--green); background: rgba(0,229,160,0.12); color: var(--green); }
+.answer-btn.selected-no { border-color: var(--red); background: rgba(255,77,109,0.12); color: var(--red); }
+.answer-icon { font-size: 18px; }
+
+/* Divider */
+.divider {
+height: 1px;
+background: rgba(255,255,255,0.06);
+margin: 32px 0;
+}
+
+/* Results screen */
+.result-header {
+text-align: center;
+margin-bottom: 48px;
+}
+
+.result-score-ring {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+border: 3px solid;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 24px;
+flex-direction: column;
+}
+
+.result-score-ring.high { border-color: var(--green); box-shadow: 0 0 30px rgba(0,229,160,0.2); }
+.result-score-ring.mid { border-color: var(--orange); box-shadow: 0 0 30px rgba(255,170,0,0.2); }
+.result-score-ring.low { border-color: var(--red); box-shadow: 0 0 30px rgba(255,77,109,0.2); }
+
+.result-score-num {
+font-family: 'Syne', sans-serif;
+font-size: 36px;
+font-weight: 800;
+}
+
+.result-score-ring.high .result-score-num { color: var(--green); }
+.result-score-ring.mid .result-score-num { color: var(--orange); }
+.result-score-ring.low .result-score-num { color: var(--red); }
+
+.result-score-label {
+font-size: 10px;
+color: var(--gray);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+}
+
+.result-title {
+font-family: 'Syne', sans-serif;
+font-size: clamp(24px, 4vw, 36px);
+font-weight: 800;
+margin-bottom: 14px;
+letter-spacing: -0.02em;
+}
+
+.result-sub {
+font-size: 16px;
+color: var(--gray-light);
+line-height: 1.7;
+max-width: 520px;
+margin: 0 auto;
+}
+
+/* Gap list */
+.gap-section-title {
+font-family: 'Syne', sans-serif;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: var(--gray);
+margin-bottom: 16px;
+}
+
+.gap-list {
+list-style: none;
+margin-bottom: 32px;
+}
+
+.gap-item {
+display: flex;
+align-items: flex-start;
+gap: 14px;
+padding: 16px 0;
+border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.gap-item:last-child { border-bottom: none; }
+
+.gap-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+margin-top: 6px;
+flex-shrink: 0;
+}
+
+.gap-dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.gap-dot.orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+.gap-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+.gap-text { font-size: 15px; color: var(--gray-light); line-height: 1.5; }
+.gap-text strong { color: var(--white); font-weight: 500; }
+
+/* CTA box */
+.cta-box {
+background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,97,255,0.08));
+border: 1px solid rgba(0,212,255,0.2);
+border-radius: 16px;
+padding: 36px;
+text-align: center;
+margin-top: 40px;
+}
+
+.cta-box-title {
+font-family: 'Syne', sans-serif;
+font-size: 22px;
+font-weight: 800;
+margin-bottom: 10px;
+letter-spacing: -0.01em;
+}
+
+.cta-box-sub {
+font-size: 14px;
+color: var(--gray-light);
+margin-bottom: 28px;
+line-height: 1.6;
+}
+
+.cta-details {
+display: flex;
+justify-content: center;
+gap: 24px;
+margin-top: 16px;
+flex-wrap: wrap;
+}
+
+.cta-detail {
+font-size: 12px;
+color: var(--gray);
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.cta-detail::before {
+content: '✓';
+color: var(--cyan);
+font-weight: 700;
+}
+
+.retake {
+text-align: center;
+margin-top: 20px;
+}
+
+.retake-btn {
+background: none;
+border: none;
+color: var(--gray);
+font-size: 13px;
+cursor: pointer;
+text-decoration: underline;
+font-family: 'DM Sans', sans-serif;
+}
+
+.retake-btn:hover { color: var(--white); }
+
+/* Transition */
+.fade-in {
+animation: fadeUp 0.35s ease both;
+}
+
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(16px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+.stat-row { grid-template-columns: 1fr; }
+.answer-row { grid-template-columns: 1fr; }
+.header { flex-direction: column; gap: 16px; align-items: flex-start; }
+.cta-box { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+<div class="logo">VYKEN <span>SECURITY</span></div>
+<div class="badge">FREE TOOL</div>
+</div>
+
+<!-- INTRO SCREEN -->
+<div class="screen active" id="screen-intro">
+<div class="fade-in">
+<div class="intro-tag">AI Governance Gap Checker</div>
+<h1 class="intro-title">Does your organisation have <span class="accent">real AI governance</span> or just a policy?</h1>
+<p class="intro-sub">Most security teams believe they are covered. Ten questions will tell you whether you actually are. Takes about 2 minutes. No signup required.</p>
+
+<div class="stat-row">
+<div class="stat-card">
+<div class="stat-num">83%</div>
+<div class="stat-label">of organisations rely on policy alone with no technical enforcement</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">77%</div>
+<div class="stat-label">of employees have pasted company data into AI tools</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">1 in 5</div>
+<div class="stat-label">organisations have experienced a breach due to shadow AI</div>
+</div>
+</div>
+
+<button class="btn" onclick="startQuiz()">
+Check your posture
+<span>→</span>
+</button>
+</div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div class="screen" id="screen-quiz">
+<div class="progress-wrap">
+<div class="progress-top">
+<span class="progress-label">Your AI Governance Posture</span>
+<span class="progress-count" id="q-count">1 / 10</span>
+</div>
+<div class="progress-bar">
+<div class="progress-fill" id="progress-fill" style="width:10%"></div>
+</div>
+</div>
+
+<div id="question-wrap" class="fade-in">
+<div class="q-number" id="q-number">Question 1 of 10</div>
+<div class="q-text" id="q-text"></div>
+<div class="q-hint" id="q-hint"></div>
+
+<div class="answer-row">
+<button class="answer-btn yes" onclick="answer(true)">
+<span class="answer-icon">✓</span> Yes
+</button>
+<button class="answer-btn no" onclick="answer(false)">
+<span class="answer-icon">✕</span> No
+</button>
+</div>
+</div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div class="screen" id="screen-result">
+<div class="fade-in" id="result-content"></div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+{
+text: "Does your organisation have a formal AI usage policy that names which tools employees can and cannot use?",
+hint: "We mean a written, communicated policy that specifies approved tools like Microsoft Copilot or Google Gemini Enterprise, not a general acceptable use policy."
+},
+{
+text: "Do you have technical controls that enforce those AI restrictions in real time, not just policy guidance?",
+hint: "Technical controls means something that actively prevents or flags violations as they happen, not a memo employees may or may not follow."
+},
+{
+text: "Can your security team see which AI tools employees are actually using, including unsanctioned ones, in real time?",
+hint: "This is visibility at the activity level. Not a quarterly audit. Not an assumption. A live view."
+},
+{
+text: "Does your DLP solution monitor and inspect what employees type into AI tools like ChatGPT, Copilot, or Gemini?",
+hint: "Most legacy DLP tools cover email, USB, and cloud uploads. The prompt layer, what people type into AI tools, is a different surface entirely."
+},
+{
+text: "Do you have a full audit log of AI interactions across your organisation that you could produce for a regulator today?",
+hint: "Not just access logs. Interaction logs. What was sent, by whom, to which tool, when, and what was flagged or blocked."
+},
+{
+text: "Are you confident that no employee is using a personal AI account (not enterprise-managed) for work tasks?",
+hint: "Personal ChatGPT accounts bypass enterprise controls entirely. 82% of AI tool usage by employees happens through personal, unmanaged accounts."
+},
+{
+text: "Has your organisation formally assessed its AI data exposure risk under the regulations that apply to you, such as GDPR, HIPAA, NDPA, or PCI-DSS?",
+hint: "A risk assessment that specifically addresses what happens when regulated data reaches a public AI model, not just general data protection compliance."
+},
+{
+text: "Does your security team have a defined incident response process specifically for AI-related data exposure events?",
+hint: "If an employee pasted customer data into ChatGPT today and you found out tomorrow, is there a documented process for how that gets handled?"
+},
+{
+text: "Has your AI governance posture been formally reviewed in the last six months?",
+hint: "The AI tool landscape changes faster than most security review cycles. A review from last year may already be missing five tools your employees now use daily."
+},
+{
+text: "Can you tell your board or executive team exactly what sensitive data has left your organisation through AI tools in the last 90 days?",
+hint: "This is the question regulators, auditors, and boards are now asking. If you cannot answer it in under ten minutes, the data has probably already left."
+}
+];
+
+let current = 0;
+let score = 0;
+const answers = [];
+
+function startQuiz() {
+document.getElementById('screen-intro').classList.remove('active');
+document.getElementById('screen-quiz').classList.add('active');
+showQuestion();
+}
+
+function showQuestion() {
+const q = questions[current];
+const wrap = document.getElementById('question-wrap');
+wrap.className = 'fade-in';
+void wrap.offsetWidth;
+wrap.className = 'fade-in';
+
+document.getElementById('q-number').textContent = `Question ${current + 1} of ${questions.length}`;
+document.getElementById('q-count').textContent = `${current + 1} / ${questions.length}`;
+document.getElementById('q-text').textContent = q.text;
+document.getElementById('q-hint').textContent = q.hint;
+document.getElementById('progress-fill').style.width = `${((current + 1) / questions.length) * 100}%`;
+}
+
+function answer(isYes) {
+answers.push(isYes);
+if (isYes) score++;
+current++;
+
+if (current < questions.length) {
+setTimeout(showQuestion, 120);
+} else {
+setTimeout(showResult, 200);
+}
+}
+
+function showResult() {
+document.getElementById('screen-quiz').classList.remove('active');
+document.getElementById('screen-result').classList.add('active');
+
+const pct = Math.round((score / questions.length) * 100);
+let tier, ringClass, title, summary, gaps, ctaTitle, ctaSub;
+
+// Find which questions they said No to
+const noIndexes = answers.map((a, i) => (!a ? i : -1)).filter(i => i >= 0);
+
+const gapDescriptions = [
+{ strong: "No formal AI policy", text: "Without a named list of approved and prohibited tools, your governance starts from zero. Employees are making their own decisions." },
+{ strong: "No technical enforcement layer", text: "Policy without enforcement is just hope. Employees who ignore the policy face no technical barrier before data leaves." },
+{ strong: "No real-time AI tool visibility", text: "You cannot govern what you cannot see. Shadow AI is almost certainly already running in your environment." },
+{ strong: "DLP gap at the prompt layer", text: "Your existing DLP was not built for AI interactions. What employees type into ChatGPT or Copilot is invisible to it." },
+{ strong: "No AI interaction audit trail", text: "Without logs, you cannot respond to incidents, satisfy regulators, or answer board-level questions about what has left your environment." },
+{ strong: "Personal AI account risk", text: "Personal accounts bypass every enterprise control you have. This is the most common source of AI-related data exposure." },
+{ strong: "No regulatory AI risk assessment", text: "Until you formally assess AI exposure under your applicable regulations, you do not know your actual liability." },
+{ strong: "No AI-specific incident response process", text: "A data exposure through an AI tool is a breach. Without a defined process, your response will be slow and inconsistent." },
+{ strong: "Governance review overdue", text: "Tools your team now uses daily may not have existed when you last reviewed your posture. The gap widens quietly." },
+{ strong: "Cannot answer the 90-day data question", text: "This is the question auditors and boards are now asking. Not being able to answer it is itself a governance failure." }
+];
+
+const noGaps = noIndexes.map(i => gapDescriptions[i]);
+
+if (score >= 8) {
+tier = 'high';
+ringClass = 'high';
+title = 'Strong AI Governance Posture';
+summary = 'Your organisation is ahead of the curve. Most enterprises score significantly lower. The gaps you do have are worth closing before your next audit or regulatory review.';
+ctaTitle = 'See how Vyken Guard closes your remaining gaps';
+ctaSub = 'Even strong postures have blind spots. A 20-minute demo will show you what real-time enforcement looks like in practice.';
+} else if (score >= 5) {
+tier = 'mid';
+ringClass = 'mid';
+title = 'Partial Coverage. Real Exposure.';
+summary = 'You have foundations in place but significant gaps that create genuine regulatory and operational risk. The gaps below are where a breach or compliance failure is most likely to originate.';
+ctaTitle = 'See exactly how Vyken Guard closes these gaps';
+ctaSub = 'We will walk you through a live demo showing real-time enforcement across every AI tool your team uses. Free, no commitment.';
+} else {
+tier = 'low';
+ringClass = 'low';
+title = 'High Exposure. Act Now.';
+summary = 'Your organisation is in the majority but that is not a comfortable position. The gaps below represent active risk. Any one of them is sufficient for a regulatory breach or a data incident.';
+ctaTitle = 'Your organisation needs an enforcement layer';
+ctaSub = 'Vyken Guard closes every gap listed below in real time. Free demo this week, no commitment, freemium access for qualifying organisations.';
+}
+
+const gapDotClass = tier === 'high' ? 'orange' : tier === 'mid' ? 'orange' : 'red';
+
+let gapHtml = '';
+if (noGaps.length > 0) {
+gapHtml = `
+<p class="gap-section-title">Your open gaps</p>
+<ul class="gap-list">
+${noGaps.map(g => `<li class="gap-item"><span class="gap-dot ${gapDotClass}"></span><span class="gap-text"><strong>${g.strong}.</strong> ${g.text}</span></li>`).join('')}
+</ul>
+`;
+} else {
+gapHtml = `
+<ul class="gap-list">
+<li class="gap-item">
+<span class="gap-dot green"></span>
+<span class="gap-text"><strong>No open gaps identified.</strong> Your posture is genuinely strong. A demo will show you how Vyken Guard helps maintain and document it for auditors.</span>
+</li>
+</ul>
+`;
+}
+
+document.getElementById('result-content').innerHTML = `
+<div class="result-header">
+<div class="result-score-ring ${ringClass}">
+<div class="result-score-num">${score}/10</div>
+<div class="result-score-label">score</div>
+</div>
+<h2 class="result-title">${title}</h2>
+<p class="result-sub">${summary}</p>
+</div>
+
+<div class="divider"></div>
+
+${gapHtml}
+
+<div class="cta-box">
+<div class="cta-box-title">${ctaTitle}</div>
+<div class="cta-box-sub">${ctaSub}</div>
+<a href="https://vykensecurity.com" target="_blank" class="btn btn-large">Book a free demo →</a>
+<div class="cta-details">
+<span class="cta-detail">20 minutes</span>
+<span class="cta-detail">No commitment</span>
+<span class="cta-detail">Freemium access available</span>
+</div>
+</div>
+
+<div class="retake">
+<button class="retake-btn" onclick="retake()">Retake the checker</button>
+</div>
+`;
+}
+
+function retake() {
+current = 0;
+score = 0;
+answers.length = 0;
+document.getElementById('screen-result').classList.remove('active');
+document.getElementById('screen-intro').classList.add('active');
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
