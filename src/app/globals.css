@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050508;
+  --foreground: #f8fafc;
+  --surface: #0a0a0f;
+  --surface-elevated: #0f1118;
+  --surface-muted: #141820;
+  --border: #1e2a3a;
+  --border-strong: #2a3f55;
+  --primary: #00b4d8;
+  --primary-foreground: #050508;
+  --primary-glow: rgba(0, 180, 216, 0.35);
+  --secondary: #1a2433;
+  --secondary-foreground: #f8fafc;
+  --muted: #111827;
+  --muted-foreground: #94a3b8;
+  --accent: #48cae4;
+  --accent-foreground: #050508;
+  --danger: #ef4444;
+  --warning: #f97316;
+  --success: #22c55e;
+  --unknown: #64748b;
+  --risk-low: #22c55e;
+  --risk-moderate: #eab308;
+  --risk-high: #f97316;
+  --risk-critical: #ef4444;
+  --risk-unknown: #64748b;
+  --focus-ring: #00b4d8;
+  --card: var(--surface-elevated);
+  --card-foreground: var(--foreground);
+  --grid-line: rgba(0, 180, 216, 0.06);
+  --glow-radial: rgba(0, 180, 216, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-unknown: var(--unknown);
+  --color-risk-low: var(--risk-low);
+  --color-risk-moderate: var(--risk-moderate);
+  --color-risk-high: var(--risk-high);
+  --color-risk-critical: var(--risk-critical);
+  --color-risk-unknown: var(--risk-unknown);
+  --color-focus-ring: var(--focus-ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 0.75rem;
+  --radius-button: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Vyken assessment utilities */
+.vyken-grid-bg {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.vyken-radial-glow {
+  position: relative;
+}
+
+.vyken-radial-glow::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    var(--glow-radial),
+    transparent 70%
+  );
+}
+
+.vyken-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 9999px;
+  background: var(--surface-muted);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.vyken-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-elevated);
+}
+
+.vyken-card-interactive {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-elevated);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.vyken-card-interactive:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.vyken-selected-card {
+  border-color: var(--primary) !important;
+  box-shadow:
+    0 0 0 1px var(--primary),
+    0 0 20px var(--primary-glow);
+}
+
+.vyken-step-enter {
+  animation: vyken-step-in 0.35s ease-out;
+}
+
+@keyframes vyken-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vyken-progress-track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--surface-muted);
+}
+
+.vyken-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.4s ease;
+}
+
+.vyken-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  transition: border-color 0.15s ease;
+}
+
+.vyken-input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+.vyken-input--error {
+  border-color: var(--danger);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="progressbar"]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
