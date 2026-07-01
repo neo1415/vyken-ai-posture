@@ -22,6 +22,7 @@ Read `database-boundary.ts` before implementing repositories.
 | `companyProfilesRepository`    | 5      |
 | `assessmentRepository`         | 7      |
 | `toolProfilesRepository`       | 4      |
+| `toolSelectionRepository`      | 6      |
 | `leadRepository`               | 11     |
 | `reportRepository`             | 12     |
 | `adminRepository`              | 15     |

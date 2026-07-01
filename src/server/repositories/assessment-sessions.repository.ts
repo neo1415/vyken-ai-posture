@@ -4,9 +4,11 @@ import { eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import {
+  assessmentCompanyProfiles,
   assessmentSessions,
   type assessmentSessions as assessmentSessionsTable,
 } from "@/lib/db/schema/assessments";
+import { getCompanyProfileBySessionId } from "@/server/repositories/company-profiles.repository";
 
 export type CreateAssessmentSessionInput = {
   publicToken: string;
@@ -53,6 +55,39 @@ export async function getAssessmentSessionByPublicToken(
     .limit(1);
 
   return session ?? null;
+}
+
+export type AssessmentSessionWithCompanyProfile = {
+  session: AssessmentSessionRow;
+  companyProfile: typeof assessmentCompanyProfiles.$inferSelect;
+};
+
+export async function hasAssessmentSessionWithCompanyProfile(
+  publicToken: string,
+): Promise<boolean> {
+  const session = await getAssessmentSessionByPublicToken(publicToken);
+  if (!session) {
+    return false;
+  }
+
+  const companyProfile = await getCompanyProfileBySessionId(session.id);
+  return Boolean(companyProfile);
+}
+
+export async function getAssessmentSessionWithCompanyProfileByPublicToken(
+  publicToken: string,
+): Promise<AssessmentSessionWithCompanyProfile | null> {
+  const session = await getAssessmentSessionByPublicToken(publicToken);
+  if (!session) {
+    return null;
+  }
+
+  const companyProfile = await getCompanyProfileBySessionId(session.id);
+  if (!companyProfile) {
+    return null;
+  }
+
+  return { session, companyProfile };
 }
 
 export async function updateAssessmentSessionStatus(input: {

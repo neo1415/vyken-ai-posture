@@ -4,6 +4,7 @@ import type {
   AssessmentToolProfile,
   ToolSlugValidationResult,
 } from "@/features/tool-profiles/types";
+import type { AssessmentToolOption } from "@/features/tool-selector/types";
 import {
   getPublishedToolProfileBySlug,
   getPublishedToolProfiles,
@@ -47,6 +48,40 @@ function toAssessmentToolProfile(
     sources: profile.sources ?? [],
     sourceConfidenceNotes: profile.sourceConfidenceNotes,
   };
+}
+
+function toAssessmentToolOption(
+  row: PublishedToolProfileRow,
+): AssessmentToolOption {
+  const boundaries = row.profile.recommendedUsageBoundaries?.trim();
+  const shortDescription =
+    boundaries && boundaries.length > 0
+      ? boundaries.length > 140
+        ? `${boundaries.slice(0, 137)}...`
+        : boundaries
+      : undefined;
+
+  return {
+    slug: row.tool.slug,
+    name: row.tool.name,
+    categorySlug: row.category.slug,
+    categoryName: row.category.name,
+    shortDescription,
+    commonUseCases: row.profile.commonUseCases ?? [],
+    supportsFileUploads: row.profile.supportsFileUploads,
+    supportsMeetingTranscripts: row.profile.supportsMeetingTranscripts,
+    codingAssistantRelevance: row.profile.codingAssistantRelevance,
+    agenticOrConnectedToolRelevance:
+      row.profile.agenticOrConnectedToolRelevance,
+    confidenceLevel: row.profile.publicInfoConfidenceLevel,
+  };
+}
+
+export async function listAssessmentToolOptions(): Promise<
+  AssessmentToolOption[]
+> {
+  const rows = await getPublishedToolProfiles();
+  return rows.map(toAssessmentToolOption);
 }
 
 export async function listAssessmentToolProfiles(): Promise<

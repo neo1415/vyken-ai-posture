@@ -18,7 +18,8 @@
     "db:check": "drizzle-kit check",
     "db:seed": "tsx src/lib/db/seeds/seed.ts",
     "db:setup": "pnpm db:migrate && pnpm db:rls && pnpm db:seed",
-    "tool-profiles:validate": "tsx src/lib/db/seeds/validate-tool-profiles.ts"
+    "tool-profiles:validate": "tsx src/lib/db/seeds/validate-tool-profiles.ts",
+    "verify:module6": "tsx src/lib/db/scripts/verify-module6.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
