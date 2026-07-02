@@ -16,17 +16,18 @@ Read `database-boundary.ts` before implementing repositories.
 
 ## Planned repositories (future modules)
 
-| Repository                     | Module |
-| ------------------------------ | ------ |
-| `assessmentSessionsRepository` | 5      |
-| `companyProfilesRepository`    | 5      |
-| `assessmentRepository`         | 7      |
-| `toolProfilesRepository`       | 4      |
-| `toolSelectionRepository`      | 6      |
-| `assessmentAnswersRepository`  | 7      |
-| `assessmentScoringRepository`  | 8      |
-| `leadRepository`               | 11     |
-| `reportRepository`             | 12     |
-| `adminRepository`              | 15     |
+| Repository                            | Module |
+| ------------------------------------- | ------ |
+| `assessmentSessionsRepository`        | 5      |
+| `companyProfilesRepository`           | 5      |
+| `assessmentRepository`                | 7      |
+| `toolProfilesRepository`              | 4      |
+| `toolSelectionRepository`             | 6      |
+| `assessmentAnswersRepository`         | 7      |
+| `assessmentScoringRepository`         | 8      |
+| `assessmentRecommendationsRepository` | 9      |
+| `leadRepository`                      | 11     |
+| `reportRepository`                    | 12     |
+| `adminRepository`                     | 15     |
 
 Implementation begins when the corresponding feature module is built.

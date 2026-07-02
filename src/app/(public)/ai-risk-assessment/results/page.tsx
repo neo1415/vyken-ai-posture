@@ -2,6 +2,10 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { ASSESSMENT_WIZARD_COPY } from "@/features/assessment-wizard/constants";
 import { isValidPublicTokenFormat } from "@/lib/security/public-token";
 import {
+  getAssessmentRecommendationPreview,
+  getPersistedRecommendationCounts,
+} from "@/server/services/assessment-recommendations.service";
+import {
   getAssessmentScoringPreview,
   getPersistedScoringCounts,
   scoreAssessmentSession,
@@ -28,9 +32,21 @@ export default async function ResultsPlaceholderPage({
         : await getAssessmentScoringPreview(sessionToken)
       : null;
 
+  const recommendationResult =
+    canScore && sessionToken && scoringResult
+      ? recompute
+        ? await getAssessmentRecommendationPreview(sessionToken)
+        : await getAssessmentRecommendationPreview(sessionToken)
+      : null;
+
   const persistedCounts =
     canScore && sessionToken
       ? await getPersistedScoringCounts(sessionToken)
+      : null;
+
+  const recommendationCounts =
+    canScore && sessionToken
+      ? await getPersistedRecommendationCounts(sessionToken)
       : null;
 
   const isValidSession = Boolean(scoringResult);
@@ -51,7 +67,7 @@ export default async function ResultsPlaceholderPage({
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             {isValidSession
-              ? "Your risk score has been calculated. Final results and recommendations will be shown in the next step."
+              ? "Your risk posture and recommended next steps are ready. The final results view will be built next."
               : "Assessment session or answers not found. Please start again."}
           </p>
         </div>
@@ -88,6 +104,22 @@ export default async function ResultsPlaceholderPage({
                     Signals generated:{" "}
                     <span className="text-foreground font-medium">
                       {scoringResult.signals.length}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Findings generated:{" "}
+                    <span className="text-foreground font-medium">
+                      {recommendationResult?.findings.length ??
+                        recommendationCounts?.findingCount ??
+                        0}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Recommendations generated:{" "}
+                    <span className="text-foreground font-medium">
+                      {recommendationResult?.recommendations.length ??
+                        recommendationCounts?.recommendationCount ??
+                        0}
                     </span>
                   </p>
                   {persistedCounts ? (

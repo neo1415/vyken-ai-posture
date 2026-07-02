@@ -9,9 +9,10 @@ Business logic that runs only on the server.
 - `toolSelectionService` (Module 6)
 - `assessmentWizardService` (Module 7)
 - `assessmentScoringService` (Module 8)
+- `assessmentRecommendationsService` (Module 9)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
-- `recommendationService`
+- `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
 - `reportGenerationService`
 - `emailService`
 
