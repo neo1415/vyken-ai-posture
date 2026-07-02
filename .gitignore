@@ -38,3 +38,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# generated report PDFs (local dev storage — not production-ready)
+/storage/reports/

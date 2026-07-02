@@ -25,9 +25,13 @@
     "verify:module9": "tsx src/lib/db/scripts/verify-module9.ts",
     "verify:module10": "tsx src/lib/db/scripts/verify-module10.ts",
     "verify:module11": "tsx src/lib/db/scripts/verify-module11.ts",
-    "verify:module12": "tsx src/lib/db/scripts/verify-module12.ts"
+    "verify:module12": "tsx src/lib/db/scripts/verify-module12.ts",
+    "verify:module13": "tsx src/lib/db/scripts/verify-module13.ts",
+    "verify:module13b": "tsx src/lib/db/scripts/verify-module13b.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
+    "@supabase/supabase-js": "^2.110.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
     "next": "^15.3.3",

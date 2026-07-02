@@ -13,6 +13,7 @@ Business logic that runs only on the server.
 - `assessmentResultService` (Module 10)
 - `leadCaptureService` (Module 11)
 - `reportContextService` (Module 12)
+- `pdfReportService` (Module 13–13B)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)

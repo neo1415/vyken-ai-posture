@@ -97,3 +97,56 @@ export async function getReportContextByPublicToken(
 
   return report.reportContext as ReportContext;
 }
+
+export async function getReportByPublicToken(
+  publicToken: string,
+): Promise<ReportRow | null> {
+  const db = getDb();
+
+  const [session] = await db
+    .select({ id: assessmentSessions.id })
+    .from(assessmentSessions)
+    .where(eq(assessmentSessions.publicToken, publicToken))
+    .limit(1);
+
+  if (!session) {
+    return null;
+  }
+
+  return getReportByAssessmentSessionId(session.id);
+}
+
+export type UpdateReportPdfGeneratedInput = {
+  assessmentSessionId: string;
+  storagePath: string;
+  generatedAt: Date;
+};
+
+export async function updateReportPdfGenerated(
+  input: UpdateReportPdfGeneratedInput,
+): Promise<ReportRow> {
+  const db = getDb();
+  const existing = await getReportByAssessmentSessionId(
+    input.assessmentSessionId,
+  );
+
+  if (!existing) {
+    throw new Error("Report row not found for PDF update.");
+  }
+
+  const [updated] = await db
+    .update(reports)
+    .set({
+      storagePath: input.storagePath,
+      status: "generated",
+      generatedAt: input.generatedAt,
+    })
+    .where(eq(reports.id, existing.id))
+    .returning();
+
+  if (!updated) {
+    throw new Error("Failed to update report PDF metadata.");
+  }
+
+  return updated;
+}
