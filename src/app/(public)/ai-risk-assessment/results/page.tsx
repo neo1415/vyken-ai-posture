@@ -1,13 +1,14 @@
 import { LinkButton } from "@/components/ui/LinkButton";
+import { LeadCaptureCard } from "@/features/leads/components/LeadCaptureCard";
 import { CategoryScoreGrid } from "@/features/results/components/CategoryScoreGrid";
 import { FindingsList } from "@/features/results/components/FindingsList";
 import { RecommendationsList } from "@/features/results/components/RecommendationsList";
 import { ResultCaveats } from "@/features/results/components/ResultCaveats";
 import { ResultHero } from "@/features/results/components/ResultHero";
-import { ResultNextStep } from "@/features/results/components/ResultNextStep";
 import { RiskScoreCard } from "@/features/results/components/RiskScoreCard";
 import { RESULT_PAGE_COPY } from "@/features/results/constants";
 import { getAssessmentResult } from "@/server/services/assessment-result.service";
+import { hasLeadForAssessmentSession } from "@/server/services/lead-capture.service";
 
 type ResultsPageProps = {
   searchParams: Promise<{ session?: string }>;
@@ -20,6 +21,11 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
     sessionToken != null && sessionToken.length > 0
       ? await getAssessmentResult(sessionToken)
       : null;
+
+  const leadAlreadyCaptured =
+    sessionToken != null && sessionToken.length > 0
+      ? await hasLeadForAssessmentSession(sessionToken)
+      : false;
 
   if (!result) {
     return (
@@ -53,7 +59,10 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         <FindingsList findings={result.findings} />
         <RecommendationsList recommendations={result.recommendations} />
         <ResultCaveats summaryCaveats={result.summary.caveats} />
-        <ResultNextStep />
+        <LeadCaptureCard
+          publicToken={result.publicToken}
+          leadAlreadyCaptured={leadAlreadyCaptured}
+        />
 
         <div className="flex flex-wrap gap-3">
           <LinkButton

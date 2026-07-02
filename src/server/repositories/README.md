@@ -26,7 +26,7 @@ Read `database-boundary.ts` before implementing repositories.
 | `assessmentAnswersRepository`         | 7      |
 | `assessmentScoringRepository`         | 8      |
 | `assessmentRecommendationsRepository` | 9      |
-| `leadRepository`                      | 11     |
+| `leadsRepository`                     | 11     |
 | `reportRepository`                    | 12     |
 | `adminRepository`                     | 15     |
 

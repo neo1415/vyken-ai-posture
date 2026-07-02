@@ -1,13 +1,15 @@
 # Leads Feature
 
-Lead capture UI and result-page email form (future modules).
+Lead capture on the assessment result page (Module 11).
 
 ## Belongs here
 
-- Work email capture form
-- Post-assessment CTA components
+- Lead capture form UI (`LeadCaptureForm`, `LeadCaptureCard`)
+- Server action (`submitLeadCapture`)
+- Validation schemas and constants
 
 ## Does not belong here
 
-- Lead persistence and admin dashboard (server + admin modules)
-- Fake lead data
+- Lead persistence (use `src/server/repositories/leads.repository.ts`)
+- Business orchestration (use `src/server/services/lead-capture.service.ts`)
+- Report generation, email delivery, admin dashboard (later modules)

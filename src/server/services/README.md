@@ -11,6 +11,7 @@ Business logic that runs only on the server.
 - `assessmentScoringService` (Module 8)
 - `assessmentRecommendationsService` (Module 9)
 - `assessmentResultService` (Module 10)
+- `leadCaptureService` (Module 11)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
