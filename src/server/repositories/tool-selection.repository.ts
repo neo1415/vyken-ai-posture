@@ -1,8 +1,13 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
+import {
+  aiToolCategories,
+  aiToolProfileVersions,
+  aiTools,
+} from "@/lib/db/schema/ai-tools";
 import { assessmentSelectedTools } from "@/lib/db/schema/assessments";
 import { unknownToolRequests } from "@/lib/db/schema/events";
 
@@ -178,4 +183,86 @@ export async function replaceToolSelectionsForSession(
       );
     }
   });
+}
+
+export type SelectedToolContextRow = {
+  hasNotSure: boolean;
+  categorySlugs: string[];
+  codingAssistantRelevance: boolean;
+  agenticOrConnectedRelevance: boolean;
+};
+
+export async function hasToolSelectionsForSession(
+  assessmentSessionId: string,
+): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: assessmentSelectedTools.id })
+    .from(assessmentSelectedTools)
+    .where(eq(assessmentSelectedTools.assessmentSessionId, assessmentSessionId))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function getSelectedToolContextForAssessment(
+  assessmentSessionId: string,
+): Promise<SelectedToolContextRow> {
+  const db = getDb();
+
+  const selections = await db
+    .select({
+      selectionType: assessmentSelectedTools.selectionType,
+      toolId: assessmentSelectedTools.toolId,
+    })
+    .from(assessmentSelectedTools)
+    .where(
+      eq(assessmentSelectedTools.assessmentSessionId, assessmentSessionId),
+    );
+
+  const hasNotSure = selections.some((row) => row.selectionType === "not_sure");
+  const toolIds = selections
+    .map((row) => row.toolId)
+    .filter((id): id is string => Boolean(id));
+
+  if (toolIds.length === 0) {
+    return {
+      hasNotSure,
+      categorySlugs: [],
+      codingAssistantRelevance: false,
+      agenticOrConnectedRelevance: false,
+    };
+  }
+
+  const profileRows = await db
+    .select({
+      categorySlug: aiToolCategories.slug,
+      codingAssistantRelevance: aiToolProfileVersions.codingAssistantRelevance,
+      agenticOrConnectedRelevance:
+        aiToolProfileVersions.agenticOrConnectedToolRelevance,
+    })
+    .from(aiToolProfileVersions)
+    .innerJoin(aiTools, eq(aiToolProfileVersions.toolId, aiTools.id))
+    .innerJoin(aiToolCategories, eq(aiTools.categoryId, aiToolCategories.id))
+    .where(
+      and(
+        inArray(aiTools.id, toolIds),
+        eq(aiTools.isActive, true),
+        eq(aiToolProfileVersions.publishedStatus, "published"),
+      ),
+    );
+
+  const categorySlugs = [
+    ...new Set(profileRows.map((row) => row.categorySlug)),
+  ];
+
+  return {
+    hasNotSure,
+    categorySlugs,
+    codingAssistantRelevance: profileRows.some(
+      (row) => row.codingAssistantRelevance === true,
+    ),
+    agenticOrConnectedRelevance: profileRows.some(
+      (row) => row.agenticOrConnectedRelevance === true,
+    ),
+  };
 }

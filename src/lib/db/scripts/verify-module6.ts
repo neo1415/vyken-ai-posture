@@ -27,7 +27,8 @@ import { unknownToolRequests } from "@/lib/db/schema/events";
 import { leads } from "@/lib/db/schema/leads";
 import { reports } from "@/lib/db/schema/reports";
 
-const DEV_BASE_URL = process.env.MODULE6_VERIFY_BASE_URL ?? "http://localhost:3000";
+const DEV_BASE_URL =
+  process.env.MODULE6_VERIFY_BASE_URL ?? "http://localhost:3000";
 const UUID_REGEX =
   /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi;
 
@@ -44,11 +45,6 @@ function generatePublicToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
-function htmlContainsUuid(html: string): boolean {
-  UUID_REGEX.lastIndex = 0;
-  return UUID_REGEX.test(html);
-}
-
 async function waitForDevServer(maxAttempts = 30, delayMs = 2000) {
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
@@ -62,7 +58,9 @@ async function waitForDevServer(maxAttempts = 30, delayMs = 2000) {
   return false;
 }
 
-async function createCompanyProfileSession(db: ReturnType<typeof createScriptDb>["db"]) {
+async function createCompanyProfileSession(
+  db: ReturnType<typeof createScriptDb>["db"],
+) {
   const publicToken = generatePublicToken();
   const [session] = await db
     .insert(assessmentSessions)
@@ -249,7 +247,12 @@ async function main() {
   const slugA = publishedTools[0]?.tool.slug;
   const slugB = publishedTools[1]?.tool.slug;
   if (!slugA || !slugB) {
-    record(4, "Select 2 known tools and submit", false, "Need 2+ published tools");
+    record(
+      4,
+      "Select 2 known tools and submit",
+      false,
+      "Need 2+ published tools",
+    );
     await client.end();
     printSummary();
     process.exit(1);
@@ -271,16 +274,34 @@ async function main() {
     (r) => r.toolId && r.toolProfileVersionId,
   );
 
-  record(4, "Select at least 2 known tools and submit", knownOnly.length >= 2, `slugs: ${slugA}, ${slugB}`);
-  record(5, "assessment_selected_tools rows inserted", knownOnly.length >= 2, `rows=${knownRows.length}`);
-  record(6, "Known rows include tool_id and tool_profile_version_id", knownIdsComplete, `known rows=${knownOnly.length}`);
+  record(
+    4,
+    "Select at least 2 known tools and submit",
+    knownOnly.length >= 2,
+    `slugs: ${slugA}, ${slugB}`,
+  );
+  record(
+    5,
+    "assessment_selected_tools rows inserted",
+    knownOnly.length >= 2,
+    `rows=${knownRows.length}`,
+  );
+  record(
+    6,
+    "Known rows include tool_id and tool_profile_version_id",
+    knownIdsComplete,
+    `known rows=${knownOnly.length}`,
+  );
 
   await saveSelection(db, {
     sessionId,
     slugs: [slugA],
     notSure: false,
     unknownTools: [
-      { name: "CustomVerifyTool", url: "https://example.com/custom-verify-tool" },
+      {
+        name: "CustomVerifyTool",
+        url: "https://example.com/custom-verify-tool",
+      },
     ],
   });
 
@@ -288,31 +309,67 @@ async function main() {
     .select()
     .from(assessmentSelectedTools)
     .where(eq(assessmentSelectedTools.assessmentSessionId, sessionId));
-  const unknownSelection = afterUnknown.filter((r) => r.selectionType === "unknown_tool");
+  const unknownSelection = afterUnknown.filter(
+    (r) => r.selectionType === "unknown_tool",
+  );
   const unknownRequests = await db
     .select()
     .from(unknownToolRequests)
     .where(eq(unknownToolRequests.assessmentSessionId, sessionId));
 
-  record(7, "Add one unknown tool with valid URL", unknownSelection.length === 1, `unknown rows=${unknownSelection.length}`);
-  record(8, "assessment_selected_tools has unknown_tool row", unknownSelection[0]?.unknownToolName === "CustomVerifyTool", unknownSelection[0]?.unknownToolName ?? "n/a");
-  record(9, "unknown_tool_requests row with status = new", unknownRequests.length === 1 && unknownRequests[0]?.status === "new", `status=${unknownRequests[0]?.status ?? "n/a"}`);
+  record(
+    7,
+    "Add one unknown tool with valid URL",
+    unknownSelection.length === 1,
+    `unknown rows=${unknownSelection.length}`,
+  );
+  record(
+    8,
+    "assessment_selected_tools has unknown_tool row",
+    unknownSelection[0]?.unknownToolName === "CustomVerifyTool",
+    unknownSelection[0]?.unknownToolName ?? "n/a",
+  );
+  record(
+    9,
+    "unknown_tool_requests row with status = new",
+    unknownRequests.length === 1 && unknownRequests[0]?.status === "new",
+    `status=${unknownRequests[0]?.status ?? "n/a"}`,
+  );
 
-  await saveSelection(db, { sessionId, slugs: [], notSure: true, unknownTools: [] });
+  await saveSelection(db, {
+    sessionId,
+    slugs: [],
+    notSure: true,
+    unknownTools: [],
+  });
   const afterNotSure = await db
     .select()
     .from(assessmentSelectedTools)
     .where(eq(assessmentSelectedTools.assessmentSessionId, sessionId));
-  const notSureRows = afterNotSure.filter((r) => r.selectionType === "not_sure");
-  record(10, "Select I'm not sure what employees use", notSureRows.length === 1, `not_sure rows=${notSureRows.length}`);
+  const notSureRows = afterNotSure.filter(
+    (r) => r.selectionType === "not_sure",
+  );
+  record(
+    10,
+    "Select I'm not sure what employees use",
+    notSureRows.length === 1,
+    `not_sure rows=${notSureRows.length}`,
+  );
   record(11, "not_sure row saved", notSureRows.length === 1, "ok");
 
-  await saveSelection(db, { sessionId, slugs: [slugB], notSure: false, unknownTools: [] });
+  await saveSelection(db, {
+    sessionId,
+    slugs: [slugB],
+    notSure: false,
+    unknownTools: [],
+  });
   await saveSelection(db, {
     sessionId,
     slugs: [slugA, slugB],
     notSure: true,
-    unknownTools: [{ name: "ReplacementTool", url: "https://example.com/replacement" }],
+    unknownTools: [
+      { name: "ReplacementTool", url: "https://example.com/replacement" },
+    ],
   });
 
   const afterResubmit = await db
@@ -323,26 +380,72 @@ async function main() {
     .select()
     .from(unknownToolRequests)
     .where(eq(unknownToolRequests.assessmentSessionId, sessionId));
-  const knownCount = afterResubmit.filter((r) => r.selectionType === "known_tool").length;
-  const unknownCount = afterResubmit.filter((r) => r.selectionType === "unknown_tool").length;
-  const notSureCount = afterResubmit.filter((r) => r.selectionType === "not_sure").length;
+  const knownCount = afterResubmit.filter(
+    (r) => r.selectionType === "known_tool",
+  ).length;
+  const unknownCount = afterResubmit.filter(
+    (r) => r.selectionType === "unknown_tool",
+  ).length;
+  const notSureCount = afterResubmit.filter(
+    (r) => r.selectionType === "not_sure",
+  ).length;
   const replaceOk =
-    knownCount === 2 && unknownCount === 1 && notSureCount === 1 && afterResubmit.length === 4 && afterResubmitRequests.length === 1;
+    knownCount === 2 &&
+    unknownCount === 1 &&
+    notSureCount === 1 &&
+    afterResubmit.length === 4 &&
+    afterResubmitRequests.length === 1;
 
-  record(12, "Re-submit same session with different selection", replaceOk, `known=${knownCount}, unknown=${unknownCount}, not_sure=${notSureCount}`);
-  record(13, "Old selections replaced, not duplicated", replaceOk, `total rows=${afterResubmit.length}, requests=${afterResubmitRequests.length}`);
+  record(
+    12,
+    "Re-submit same session with different selection",
+    replaceOk,
+    `known=${knownCount}, unknown=${unknownCount}, not_sure=${notSureCount}`,
+  );
+  record(
+    13,
+    "Old selections replaced, not duplicated",
+    replaceOk,
+    `total rows=${afterResubmit.length}, requests=${afterResubmitRequests.length}`,
+  );
 
   const [leadRows, reportRows, scoreRows, answerRows] = await Promise.all([
     db.select().from(leads).where(eq(leads.assessmentSessionId, sessionId)),
     db.select().from(reports).where(eq(reports.assessmentSessionId, sessionId)),
-    db.select().from(assessmentScores).where(eq(assessmentScores.assessmentSessionId, sessionId)),
-    db.select().from(assessmentAnswers).where(eq(assessmentAnswers.assessmentSessionId, sessionId)),
+    db
+      .select()
+      .from(assessmentScores)
+      .where(eq(assessmentScores.assessmentSessionId, sessionId)),
+    db
+      .select()
+      .from(assessmentAnswers)
+      .where(eq(assessmentAnswers.assessmentSessionId, sessionId)),
   ]);
 
-  record(14, "No leads rows created", leadRows.length === 0, `leads=${leadRows.length}`);
-  record(15, "No reports rows created", reportRows.length === 0, `reports=${reportRows.length}`);
-  record(16, "No assessment_scores rows created", scoreRows.length === 0, `scores=${scoreRows.length}`);
-  record(17, "No assessment_answers rows created", answerRows.length === 0, `answers=${answerRows.length}`);
+  record(
+    14,
+    "No leads rows created",
+    leadRows.length === 0,
+    `leads=${leadRows.length}`,
+  );
+  record(
+    15,
+    "No reports rows created",
+    reportRows.length === 0,
+    `reports=${reportRows.length}`,
+  );
+  record(
+    16,
+    "No assessment_scores rows created",
+    scoreRows.length === 0,
+    `scores=${scoreRows.length}`,
+  );
+  record(
+    17,
+    "No assessment_answers rows created",
+    answerRows.length === 0,
+    `answers=${answerRows.length}`,
+  );
 
   const usageResponse = await fetch(
     `${DEV_BASE_URL}/ai-risk-assessment/usage?session=${encodeURIComponent(publicToken)}`,
@@ -356,7 +459,9 @@ async function main() {
 
   UUID_REGEX.lastIndex = 0;
   const urlTokenLooksLikeUuid = UUID_REGEX.test(publicToken);
-  const formTokenMatch = toolsHtml.match(/name="sessionToken"[^>]*value="([^"]*)"/);
+  const formTokenMatch = toolsHtml.match(
+    /name="sessionToken"[^>]*value="([^"]*)"/,
+  );
   const formToken = formTokenMatch?.[1] ?? "";
   UUID_REGEX.lastIndex = 0;
   const formTokenLooksLikeUuid = UUID_REGEX.test(formToken);
@@ -369,15 +474,24 @@ async function main() {
     `URL token is public_token=${!urlTokenLooksLikeUuid}; form token matches public_token=${formUsesPublicToken}; form value is not UUID=${!formTokenLooksLikeUuid}`,
   );
 
-  const missingHtml = await (await fetch(`${DEV_BASE_URL}/ai-risk-assessment/tools`)).text();
+  const missingHtml = await (
+    await fetch(`${DEV_BASE_URL}/ai-risk-assessment/tools`)
+  ).text();
   const invalidHtml = await (
-    await fetch(`${DEV_BASE_URL}/ai-risk-assessment/tools?session=invalid-token-value`)
+    await fetch(
+      `${DEV_BASE_URL}/ai-risk-assessment/tools?session=invalid-token-value`,
+    )
   ).text();
   const safeError =
     missingHtml.includes("Assessment session not found") &&
     invalidHtml.includes("Assessment session not found");
 
-  record(20, "Invalid/missing session shows safe error", safeError, "Both missing and invalid session pages show safe error");
+  record(
+    20,
+    "Invalid/missing session shows safe error",
+    safeError,
+    "Both missing and invalid session pages show safe error",
+  );
 
   await client.end();
   printSummary();
@@ -388,7 +502,9 @@ function printSummary() {
   console.log("---");
   const passed = results.filter((r) => r.pass).length;
   const failed = results.filter((r) => !r.pass).length;
-  console.log(`Summary: ${passed} passed, ${failed} failed, ${results.length} checks`);
+  console.log(
+    `Summary: ${passed} passed, ${failed} failed, ${results.length} checks`,
+  );
 }
 
 main().catch((error) => {

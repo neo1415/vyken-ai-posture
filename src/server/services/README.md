@@ -7,6 +7,7 @@ Business logic that runs only on the server.
 - `companyProfileService` (Module 5)
 - `toolProfilesService` (Module 4)
 - `toolSelectionService` (Module 6)
+- `assessmentWizardService` (Module 7)
 - `scoringService`
 - `signalExtractionService`
 - `recommendationService`
