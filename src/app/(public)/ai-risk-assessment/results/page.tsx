@@ -1,11 +1,14 @@
 import { LinkButton } from "@/components/ui/LinkButton";
 import { ASSESSMENT_WIZARD_COPY } from "@/features/assessment-wizard/constants";
 import { isValidPublicTokenFormat } from "@/lib/security/public-token";
-import { hasAssessmentAnswersForSession } from "@/server/repositories/assessment-answers.repository";
-import { getAssessmentSessionByPublicToken } from "@/server/repositories/assessment-sessions.repository";
+import {
+  getAssessmentScoringPreview,
+  getPersistedScoringCounts,
+  scoreAssessmentSession,
+} from "@/server/services/assessment-scoring.service";
 
 type ResultsPlaceholderPageProps = {
-  searchParams: Promise<{ session?: string }>;
+  searchParams: Promise<{ session?: string; recompute?: string }>;
 };
 
 export default async function ResultsPlaceholderPage({
@@ -15,15 +18,22 @@ export default async function ResultsPlaceholderPage({
   const sessionToken = params.session?.trim();
   const hasValidFormat = sessionToken && isValidPublicTokenFormat(sessionToken);
 
-  const session =
-    hasValidFormat && sessionToken
-      ? await getAssessmentSessionByPublicToken(sessionToken)
+  const recompute = params.recompute === "1";
+  const canScore = Boolean(hasValidFormat && sessionToken);
+
+  const scoringResult =
+    canScore && sessionToken
+      ? recompute
+        ? await scoreAssessmentSession(sessionToken)
+        : await getAssessmentScoringPreview(sessionToken)
       : null;
 
-  const hasAnswers =
-    session != null ? await hasAssessmentAnswersForSession(session.id) : false;
+  const persistedCounts =
+    canScore && sessionToken
+      ? await getPersistedScoringCounts(sessionToken)
+      : null;
 
-  const isValidSession = Boolean(session && hasAnswers);
+  const isValidSession = Boolean(scoringResult);
 
   return (
     <div className="vyken-grid-bg vyken-radial-glow relative -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-10">
@@ -41,7 +51,7 @@ export default async function ResultsPlaceholderPage({
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             {isValidSession
-              ? "Your assessment answers were saved. Risk scoring will be calculated in the next module."
+              ? "Your risk score has been calculated. Final results and recommendations will be shown in the next step."
               : "Assessment session or answers not found. Please start again."}
           </p>
         </div>
@@ -50,10 +60,45 @@ export default async function ResultsPlaceholderPage({
           {isValidSession ? (
             <>
               <p className="text-foreground text-sm leading-relaxed">
-                Scoring, risk signals, recommendations, and reports are not
-                available yet. This placeholder confirms your wizard answers
-                were persisted.
+                This is a limited preview. It is framework-informed and based on
+                provided answers and curated tool profiles. It is not a legal
+                opinion, compliance certification, audit, or live scan.
               </p>
+
+              {scoringResult ? (
+                <div className="border-border bg-surface-muted space-y-2 rounded-lg border p-4">
+                  <p className="text-foreground text-sm font-semibold">
+                    Overall risk score:{" "}
+                    <span className="font-bold tabular-nums">
+                      {scoringResult.overallScore}/100
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Risk level:{" "}
+                    <span className="text-foreground font-medium">
+                      {scoringResult.overallRiskLevel}
+                    </span>
+                    {" • "}
+                    Confidence:{" "}
+                    <span className="text-foreground font-medium">
+                      {scoringResult.confidenceLevel}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Signals generated:{" "}
+                    <span className="text-foreground font-medium">
+                      {scoringResult.signals.length}
+                    </span>
+                  </p>
+                  {persistedCounts ? (
+                    <p className="text-muted-foreground text-xs">
+                      Persisted score: {persistedCounts.hasScore ? "yes" : "no"}
+                      ; persisted signals: {persistedCounts.signalCount}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               {sessionToken ? (
                 <LinkButton
                   href={`/ai-risk-assessment/usage?session=${encodeURIComponent(sessionToken)}`}

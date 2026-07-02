@@ -8,7 +8,8 @@ Business logic that runs only on the server.
 - `toolProfilesService` (Module 4)
 - `toolSelectionService` (Module 6)
 - `assessmentWizardService` (Module 7)
-- `scoringService`
+- `assessmentScoringService` (Module 8)
+- `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService`
 - `reportGenerationService`
