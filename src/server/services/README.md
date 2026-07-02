@@ -10,6 +10,7 @@ Business logic that runs only on the server.
 - `assessmentWizardService` (Module 7)
 - `assessmentScoringService` (Module 8)
 - `assessmentRecommendationsService` (Module 9)
+- `assessmentResultService` (Module 10)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
