@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import { leads } from "@/lib/db/schema/leads";
@@ -105,4 +105,19 @@ export async function getLeadCountForAssessment(
     .where(eq(leads.assessmentSessionId, assessmentSessionId));
 
   return Number(result?.value ?? 0);
+}
+
+export async function getLatestLeadForAssessment(
+  assessmentSessionId: string,
+): Promise<LeadRow | null> {
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(leads)
+    .where(eq(leads.assessmentSessionId, assessmentSessionId))
+    .orderBy(desc(leads.updatedAt))
+    .limit(1);
+
+  return rows[0] ?? null;
 }

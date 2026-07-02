@@ -24,7 +24,8 @@
     "verify:module8": "tsx src/lib/db/scripts/verify-module8.ts",
     "verify:module9": "tsx src/lib/db/scripts/verify-module9.ts",
     "verify:module10": "tsx src/lib/db/scripts/verify-module10.ts",
-    "verify:module11": "tsx src/lib/db/scripts/verify-module11.ts"
+    "verify:module11": "tsx src/lib/db/scripts/verify-module11.ts",
+    "verify:module12": "tsx src/lib/db/scripts/verify-module12.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
