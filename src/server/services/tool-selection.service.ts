@@ -5,6 +5,7 @@ import { getAssessmentSessionWithCompanyProfileByPublicToken } from "@/server/re
 import { getPublishedToolProfilesBySlugs } from "@/server/repositories/tool-profiles.repository";
 import { replaceToolSelectionsForSession } from "@/server/repositories/tool-selection.repository";
 import { validateToolSlugs } from "@/server/services/tool-profiles.service";
+import { trackPublicAssessmentEventBySessionId } from "@/server/services/event-tracking.service";
 
 export class ToolSelectionError extends Error {
   constructor(
@@ -90,6 +91,16 @@ export async function saveToolSelection(
     unknownTools,
     notSure: input.notSure,
     unknownToolRequests,
+  });
+
+  void trackPublicAssessmentEventBySessionId({
+    assessmentSessionId: session.id,
+    action: "tools_selected",
+    metadata: {
+      toolCount: knownTools.length,
+      unknownToolCount: unknownTools.length,
+      hasNotSure: input.notSure,
+    },
   });
 
   return { publicToken: session.publicToken };

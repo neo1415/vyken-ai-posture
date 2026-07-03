@@ -4,10 +4,12 @@ import type { LeadCaptureInput } from "@/features/leads/types";
 import { isValidPublicTokenFormat } from "@/lib/security/public-token";
 import { getAssessmentSessionByPublicToken } from "@/server/repositories/assessment-sessions.repository";
 import {
+  getLeadByAssessmentSessionAndEmail,
   getLeadCountForAssessment,
   upsertLeadForAssessment,
 } from "@/server/repositories/leads.repository";
 import { getAssessmentResult } from "@/server/services/assessment-result.service";
+import { trackLeadEvent } from "@/server/services/event-tracking.service";
 
 export class LeadCaptureError extends Error {
   constructor(message: string) {
@@ -53,6 +55,11 @@ export async function captureAssessmentLead(
     );
   }
 
+  const existing = await getLeadByAssessmentSessionAndEmail(
+    session.id,
+    input.workEmail,
+  );
+
   const result = await getAssessmentResult(input.publicToken);
   if (!result) {
     throw new LeadCaptureError(
@@ -60,7 +67,7 @@ export async function captureAssessmentLead(
     );
   }
 
-  await upsertLeadForAssessment({
+  const lead = await upsertLeadForAssessment({
     assessmentSessionId: session.id,
     email: input.workEmail,
     name: input.fullName,
@@ -70,6 +77,17 @@ export async function captureAssessmentLead(
     consentToFollowUp: input.consent,
     leadScore: result.summary.overallScore,
   });
+
+  if (!existing) {
+    void trackLeadEvent({
+      leadId: lead.id,
+      eventType: "report_requested",
+      metadata: {
+        sourcePage: "lead_capture",
+        followUpInterest: input.followUpInterest ?? undefined,
+      },
+    });
+  }
 
   return { success: true };
 }

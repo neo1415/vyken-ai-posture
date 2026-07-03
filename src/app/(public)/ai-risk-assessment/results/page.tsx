@@ -1,4 +1,5 @@
 import { LinkButton } from "@/components/ui/LinkButton";
+import { ResultFollowUpCTA } from "@/features/event-tracking/components/ResultFollowUpCTA";
 import { LeadCaptureCard } from "@/features/leads/components/LeadCaptureCard";
 import { CategoryScoreGrid } from "@/features/results/components/CategoryScoreGrid";
 import { FindingsList } from "@/features/results/components/FindingsList";
@@ -8,6 +9,7 @@ import { ResultHero } from "@/features/results/components/ResultHero";
 import { RiskScoreCard } from "@/features/results/components/RiskScoreCard";
 import { RESULT_PAGE_COPY } from "@/features/results/constants";
 import { getAssessmentResult } from "@/server/services/assessment-result.service";
+import { trackPublicAssessmentEvent } from "@/server/services/event-tracking.service";
 import { hasLeadForAssessmentSession } from "@/server/services/lead-capture.service";
 
 type ResultsPageProps = {
@@ -26,6 +28,21 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
     sessionToken != null && sessionToken.length > 0
       ? await hasLeadForAssessmentSession(sessionToken)
       : false;
+
+  if (result) {
+    void trackPublicAssessmentEvent({
+      publicToken: result.publicToken,
+      action: "result_viewed",
+      metadata: { riskLevel: result.summary.overallRiskLevel },
+    });
+    if (!leadAlreadyCaptured) {
+      void trackPublicAssessmentEvent({
+        publicToken: result.publicToken,
+        action: "lead_capture_viewed",
+        metadata: { sourcePage: "results" },
+      });
+    }
+  }
 
   if (!result) {
     return (
@@ -59,6 +76,10 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         <FindingsList findings={result.findings} />
         <RecommendationsList recommendations={result.recommendations} />
         <ResultCaveats summaryCaveats={result.summary.caveats} />
+        <ResultFollowUpCTA
+          publicToken={result.publicToken}
+          leadAlreadyCaptured={leadAlreadyCaptured}
+        />
         <LeadCaptureCard
           publicToken={result.publicToken}
           leadAlreadyCaptured={leadAlreadyCaptured}

@@ -4,6 +4,7 @@ import type { CompanyProfileInput } from "@/features/company-profile/types";
 import { generatePublicToken } from "@/lib/security/public-token";
 import { createAssessmentSession } from "@/server/repositories/assessment-sessions.repository";
 import { upsertCompanyProfile } from "@/server/repositories/company-profiles.repository";
+import { trackPublicAssessmentEventBySessionId } from "@/server/services/event-tracking.service";
 
 const MAX_TOKEN_COLLISION_RETRIES = 5;
 
@@ -51,6 +52,15 @@ export async function createCompanyProfileAssessment(
   await upsertCompanyProfile({
     assessmentSessionId: sessionId,
     ...input,
+  });
+
+  void trackPublicAssessmentEventBySessionId({
+    assessmentSessionId: sessionId,
+    action: "assessment_started",
+  });
+  void trackPublicAssessmentEventBySessionId({
+    assessmentSessionId: sessionId,
+    action: "company_profile_completed",
   });
 
   return { publicToken };

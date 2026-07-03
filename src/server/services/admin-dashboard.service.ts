@@ -23,7 +23,13 @@ import {
   getAdminLeadList,
   updateLeadStatusForAdmin,
 } from "@/server/repositories/admin-dashboard.repository";
+import { getAssessmentSessionByPublicToken } from "@/server/repositories/assessment-sessions.repository";
+import { getLatestLeadForAssessment } from "@/server/repositories/leads.repository";
 import { sendAssessmentReportEmail } from "@/server/services/email-delivery.service";
+import {
+  trackAdminAuditEvent,
+  trackLeadEvent,
+} from "@/server/services/event-tracking.service";
 
 export class AdminDashboardServiceError extends Error {
   constructor(message: string) {
@@ -47,7 +53,19 @@ export async function getAdminLeadDetailView(
 ): Promise<AdminLeadDetail | null> {
   await requireAdminAccess(access);
   validatePublicTokenForAdmin(publicToken);
-  return getAdminLeadDetailByPublicToken(publicToken.trim());
+  const detail = await getAdminLeadDetailByPublicToken(publicToken.trim());
+  if (detail) {
+    const session = await getAssessmentSessionByPublicToken(publicToken.trim());
+    if (session) {
+      void trackAdminAuditEvent({
+        action: "admin_lead_viewed",
+        entityType: "assessment_session",
+        entityId: session.id,
+        metadata: { sourcePage: "admin_lead_detail" },
+      });
+    }
+  }
+  return detail;
 }
 
 export async function updateAdminLeadStatus(
@@ -73,6 +91,26 @@ export async function updateAdminLeadStatus(
 
   if (!updated) {
     throw new AdminDashboardServiceError("Lead could not be updated.");
+  }
+
+  const session = await getAssessmentSessionByPublicToken(
+    validated.publicToken,
+  );
+  if (session) {
+    void trackAdminAuditEvent({
+      action: "admin_lead_status_updated",
+      entityType: "assessment_session",
+      entityId: session.id,
+      metadata: { leadStatus: validated.status },
+    });
+    const lead = await getLatestLeadForAssessment(session.id);
+    if (lead) {
+      void trackLeadEvent({
+        leadId: lead.id,
+        eventType: "status_changed",
+        metadata: { leadStatus: validated.status },
+      });
+    }
   }
 
   return updated;
@@ -119,6 +157,20 @@ export async function sendOrResendReportEmailForAdmin(
     }
 
     if (result.outcome === "sent") {
+      const session = await getAssessmentSessionByPublicToken(
+        validated.publicToken,
+      );
+      if (session) {
+        void trackAdminAuditEvent({
+          action: validated.force
+            ? "admin_email_resend_clicked"
+            : "admin_email_send_clicked",
+          entityType: "assessment_session",
+          entityId: session.id,
+          metadata: { forceResend: validated.force ?? false },
+        });
+      }
+
       return {
         outcome: result.outcome,
         message: validated.force

@@ -9,6 +9,7 @@ import {
   getSelectedToolContextForAssessment,
   hasToolSelectionsForSession,
 } from "@/server/repositories/tool-selection.repository";
+import { trackPublicAssessmentEventBySessionId } from "@/server/services/event-tracking.service";
 
 export class AssessmentWizardError extends Error {
   constructor(
@@ -104,6 +105,11 @@ export async function saveAssessmentWizardAnswers(input: {
       answerType: answer.answerType,
       answerValue: answer.value,
     })),
+  });
+
+  void trackPublicAssessmentEventBySessionId({
+    assessmentSessionId: session.id,
+    action: "usage_assessment_completed",
   });
 
   return { publicToken: session.publicToken };

@@ -17,6 +17,7 @@ Business logic that runs only on the server.
 - `emailDeliveryService` (Module 14)
 - `adminDashboardService` (Module 15)
 - `toolAdminService` (Module 16)
+- `eventTrackingService` (Module 17)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
