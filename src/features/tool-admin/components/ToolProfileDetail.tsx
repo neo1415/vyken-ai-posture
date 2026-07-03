@@ -31,6 +31,8 @@ import Link from "next/link";
 
 type ToolProfileDetailProps = {
   detail: AdminToolDetail;
+  canManageToolProfiles: boolean;
+  canPublishToolProfiles: boolean;
 };
 
 function ProfileFieldList({ data }: { data: AdminToolProfileData }) {
@@ -69,7 +71,11 @@ function ProfileFieldList({ data }: { data: AdminToolProfileData }) {
   );
 }
 
-export function ToolProfileDetail({ detail }: ToolProfileDetailProps) {
+export function ToolProfileDetail({
+  detail,
+  canManageToolProfiles,
+  canPublishToolProfiles,
+}: ToolProfileDetailProps) {
   const router = useRouter();
   const [publishState, publishAction, publishPending] = useActionState(
     publishToolProfileAction,
@@ -105,12 +111,14 @@ export function ToolProfileDetail({ detail }: ToolProfileDetailProps) {
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Link
-              href={`/admin/tools/${detail.slug}/edit`}
-              className="text-primary text-sm font-medium hover:underline"
-            >
-              Edit profile
-            </Link>
+            {canManageToolProfiles ? (
+              <Link
+                href={`/admin/tools/${detail.slug}/edit`}
+                className="text-primary text-sm font-medium hover:underline"
+              >
+                Edit profile
+              </Link>
+            ) : null}
           </div>
         </CardHeader>
         <CardContent>
@@ -184,16 +192,18 @@ export function ToolProfileDetail({ detail }: ToolProfileDetailProps) {
                 </p>
               ) : null}
               <ProfileFieldList data={profile.profileData} />
-              <form action={unpublishAction}>
-                <input type="hidden" name="toolSlug" value={detail.slug} />
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  disabled={unpublishPending}
-                >
-                  {unpublishPending ? "Archiving…" : "Unpublish profile"}
-                </Button>
-              </form>
+              {canPublishToolProfiles ? (
+                <form action={unpublishAction}>
+                  <input type="hidden" name="toolSlug" value={detail.slug} />
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={unpublishPending}
+                  >
+                    {unpublishPending ? "Archiving…" : "Unpublish profile"}
+                  </Button>
+                </form>
+              ) : null}
               {unpublishState.message ? (
                 <p
                   className={
@@ -225,17 +235,23 @@ export function ToolProfileDetail({ detail }: ToolProfileDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form action={publishAction}>
-              <input type="hidden" name="toolSlug" value={detail.slug} />
-              <input
-                type="hidden"
-                name="versionLabel"
-                value={draft.versionLabel}
-              />
-              <Button type="submit" disabled={publishPending}>
-                {publishPending ? "Publishing…" : "Publish draft"}
-              </Button>
-            </form>
+            {canPublishToolProfiles ? (
+              <form action={publishAction}>
+                <input type="hidden" name="toolSlug" value={detail.slug} />
+                <input
+                  type="hidden"
+                  name="versionLabel"
+                  value={draft.versionLabel}
+                />
+                <Button type="submit" disabled={publishPending}>
+                  {publishPending ? "Publishing…" : "Publish draft"}
+                </Button>
+              </form>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Your role can view drafts but cannot publish profiles.
+              </p>
+            )}
             {publishState.message ? (
               <p
                 className={

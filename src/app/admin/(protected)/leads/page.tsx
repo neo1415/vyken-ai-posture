@@ -1,38 +1,28 @@
 import { Suspense } from "react";
 
-import { AdminAccessGate } from "@/features/admin/components/AdminAccessGate";
 import { AdminLeadFilters } from "@/features/admin/components/AdminLeadFilters";
 import { AdminLeadTable } from "@/features/admin/components/AdminLeadTable";
 import { parseAdminLeadListSearchParams } from "@/features/admin/validation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getAdminAccessFromRequest } from "@/server/admin/admin-access";
+import { getAuthenticatedAdmin } from "@/server/admin/admin-auth";
 import { getAdminLeadsView } from "@/server/services/admin-dashboard.service";
 
 type AdminLeadsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function readAdminKey(
-  searchParams: Record<string, string | string[] | undefined>,
-): string | null {
-  const value = searchParams.admin_key;
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
-}
-
 export default async function AdminLeadsPage({
   searchParams,
 }: AdminLeadsPageProps) {
   const params = await searchParams;
-  const hasAccess = await getAdminAccessFromRequest({
-    adminKey: readAdminKey(params),
-  });
-  if (!hasAccess) {
-    return <AdminAccessGate />;
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return null;
   }
 
   const filters = parseAdminLeadListSearchParams(params);
-  const result = await getAdminLeadsView(filters);
+  const result = await getAdminLeadsView(filters, admin);
 
   return (
     <div className="space-y-8">

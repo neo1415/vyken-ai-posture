@@ -24,6 +24,7 @@ type AdminLeadActionsProps = {
   emailDeliveryStatus: string;
   consentToFollowUp: boolean;
   hasPdf: boolean;
+  canManageLeads: boolean;
 };
 
 const initialState = { status: "idle" as const };
@@ -34,6 +35,7 @@ export function AdminLeadActions({
   emailDeliveryStatus,
   consentToFollowUp,
   hasPdf,
+  canManageLeads,
 }: AdminLeadActionsProps) {
   const router = useRouter();
   const [statusState, statusAction, statusPending] = useActionState(
@@ -52,10 +54,25 @@ export function AdminLeadActions({
   }, [statusState.status, emailState.status, router]);
 
   const canSend =
+    canManageLeads &&
     consentToFollowUp &&
     (hasPdf ||
       emailDeliveryStatus === "not_sent" ||
       emailDeliveryStatus === "failed");
+
+  if (!canManageLeads) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Admin actions</CardTitle>
+          <CardDescription>
+            Your role can view lead details but cannot update status or send
+            emails.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card>

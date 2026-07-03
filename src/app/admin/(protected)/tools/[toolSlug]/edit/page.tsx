@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AdminAccessGate } from "@/features/admin/components/AdminAccessGate";
+import { AdminForbidden } from "@/features/admin/components/AdminForbidden";
 import { ToolProfileForm } from "@/features/tool-admin/components/ToolProfileForm";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getAdminAccessFromRequest } from "@/server/admin/admin-access";
+import { getAuthenticatedAdmin } from "@/server/admin/admin-auth";
+import { canManageToolProfiles } from "@/server/admin/admin-permissions";
 import {
   getAdminToolCategoryOptions,
   getAdminToolDetailView,
@@ -12,34 +13,29 @@ import {
 
 type AdminToolEditPageProps = {
   params: Promise<{ toolSlug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function readAdminKey(
-  searchParams: Record<string, string | string[] | undefined>,
-): string | null {
-  const value = searchParams.admin_key;
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
-}
 
 export default async function AdminToolEditPage({
   params,
-  searchParams,
 }: AdminToolEditPageProps) {
-  const query = await searchParams;
-  const adminKey = readAdminKey(query);
-  const hasAccess = await getAdminAccessFromRequest({
-    adminKey,
-  });
-  if (!hasAccess) {
-    return <AdminAccessGate />;
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return null;
+  }
+
+  if (!canManageToolProfiles(admin)) {
+    return (
+      <AdminForbidden
+        title="Cannot edit tools"
+        description="Your admin role can view tool profiles but cannot edit them."
+      />
+    );
   }
 
   const { toolSlug } = await params;
-  const access = { adminKey };
   const [detail, categories] = await Promise.all([
-    getAdminToolDetailView(toolSlug, access),
-    getAdminToolCategoryOptions(access),
+    getAdminToolDetailView(toolSlug, admin),
+    getAdminToolCategoryOptions(admin),
   ]);
   if (!detail) {
     notFound();

@@ -14,10 +14,14 @@ import {
   validateAdminLeadStatusUpdate,
   validatePublicTokenForAdmin,
 } from "@/features/admin/validation";
+import type { AuthenticatedAdmin } from "@/server/admin/admin-permissions";
 import {
-  AdminAccessError,
-  requireAdminAccess,
-} from "@/server/admin/admin-access";
+  AdminPermissionError,
+  assertPermission,
+  canManageLeads,
+  canSendReportEmail,
+  canViewAdminDashboard,
+} from "@/server/admin/admin-permissions";
 import {
   getAdminLeadDetailByPublicToken,
   getAdminLeadList,
@@ -38,20 +42,35 @@ export class AdminDashboardServiceError extends Error {
   }
 }
 
+function toAuditAdmin(admin: AuthenticatedAdmin) {
+  if (admin.email === "legacy-dev@vyken.internal") {
+    return undefined;
+  }
+  return {
+    id: admin.id,
+    email: admin.email,
+    role: admin.role,
+  };
+}
+
+function ensureCanView(admin: AuthenticatedAdmin): void {
+  assertPermission(canViewAdminDashboard(admin));
+}
+
 export async function getAdminLeadsView(
   input: AdminLeadListFilters,
-  access?: { adminKey?: string | null },
+  admin: AuthenticatedAdmin,
 ): Promise<AdminLeadListResult> {
-  await requireAdminAccess(access);
+  ensureCanView(admin);
   const filters = validateAdminLeadListFilters(input);
   return getAdminLeadList(filters);
 }
 
 export async function getAdminLeadDetailView(
   publicToken: string,
-  access?: { adminKey?: string | null },
+  admin: AuthenticatedAdmin,
 ): Promise<AdminLeadDetail | null> {
-  await requireAdminAccess(access);
+  ensureCanView(admin);
   validatePublicTokenForAdmin(publicToken);
   const detail = await getAdminLeadDetailByPublicToken(publicToken.trim());
   if (detail) {
@@ -61,6 +80,7 @@ export async function getAdminLeadDetailView(
         action: "admin_lead_viewed",
         entityType: "assessment_session",
         entityId: session.id,
+        admin: toAuditAdmin(admin),
         metadata: { sourcePage: "admin_lead_detail" },
       });
     }
@@ -70,9 +90,9 @@ export async function getAdminLeadDetailView(
 
 export async function updateAdminLeadStatus(
   input: { publicToken: string; status: string },
-  access?: { adminKey?: string | null },
+  admin: AuthenticatedAdmin,
 ): Promise<AdminLeadStatusUpdateResult> {
-  await requireAdminAccess(access);
+  assertPermission(canManageLeads(admin));
 
   let validated;
   try {
@@ -101,6 +121,7 @@ export async function updateAdminLeadStatus(
       action: "admin_lead_status_updated",
       entityType: "assessment_session",
       entityId: session.id,
+      admin: toAuditAdmin(admin),
       metadata: { leadStatus: validated.status },
     });
     const lead = await getLatestLeadForAssessment(session.id);
@@ -118,9 +139,9 @@ export async function updateAdminLeadStatus(
 
 export async function sendOrResendReportEmailForAdmin(
   input: { publicToken: string; force?: boolean },
-  access?: { adminKey?: string | null },
+  admin: AuthenticatedAdmin,
 ): Promise<AdminEmailActionResult> {
-  await requireAdminAccess(access);
+  assertPermission(canSendReportEmail(admin));
 
   let validated;
   try {
@@ -167,6 +188,7 @@ export async function sendOrResendReportEmailForAdmin(
             : "admin_email_send_clicked",
           entityType: "assessment_session",
           entityId: session.id,
+          admin: toAuditAdmin(admin),
           metadata: { forceResend: validated.force ?? false },
         });
       }
@@ -184,7 +206,7 @@ export async function sendOrResendReportEmailForAdmin(
       message: "Report email delivery did not complete successfully.",
     };
   } catch (error) {
-    if (error instanceof AdminAccessError) {
+    if (error instanceof AdminPermissionError) {
       throw error;
     }
     throw new AdminDashboardServiceError(

@@ -32,5 +32,6 @@ Read `database-boundary.ts` before implementing repositories.
 | `adminDashboardRepository`            | 15     |
 | `toolAdminRepository`                 | 16     |
 | `eventTrackingRepository`             | 17     |
+| `adminUsersRepository`                | 18A    |
 
 Implementation begins when the corresponding feature module is built.

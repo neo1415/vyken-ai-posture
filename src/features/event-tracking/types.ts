@@ -17,7 +17,9 @@ export type SafeEventMetadata = Partial<
     | "toolCount"
     | "unknownToolCount"
     | "hasNotSure"
-    | "forceResend",
+    | "forceResend"
+    | "adminEmail"
+    | "adminRole",
     string | number | boolean
   >
 >;
@@ -46,6 +48,11 @@ export type TrackAdminAuditEventInput = {
   entityType: string;
   entityId?: string | null;
   metadata?: SafeEventMetadata;
+  admin?: {
+    id: string;
+    email: string;
+    role: string;
+  };
 };
 
 export type EventTrackingActionState = {

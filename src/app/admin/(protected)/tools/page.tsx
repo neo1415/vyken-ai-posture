@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
-import { AdminAccessGate } from "@/features/admin/components/AdminAccessGate";
 import { ToolAdminFilters } from "@/features/tool-admin/components/ToolAdminFilters";
 import { ToolAdminTable } from "@/features/tool-admin/components/ToolAdminTable";
 import { parseToolAdminListSearchParams } from "@/features/tool-admin/validation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getAdminAccessFromRequest } from "@/server/admin/admin-access";
+import { getAuthenticatedAdmin } from "@/server/admin/admin-auth";
+import { canManageToolProfiles } from "@/server/admin/admin-permissions";
 import {
   getAdminToolCategoryOptions,
   getAdminToolsView,
@@ -17,30 +17,19 @@ type AdminToolsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function readAdminKey(
-  searchParams: Record<string, string | string[] | undefined>,
-): string | null {
-  const value = searchParams.admin_key;
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
-}
-
 export default async function AdminToolsPage({
   searchParams,
 }: AdminToolsPageProps) {
   const params = await searchParams;
-  const adminKey = readAdminKey(params);
-  const hasAccess = await getAdminAccessFromRequest({
-    adminKey,
-  });
-  if (!hasAccess) {
-    return <AdminAccessGate />;
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return null;
   }
 
   const filters = parseToolAdminListSearchParams(params);
-  const access = { adminKey };
   const [result, categories] = await Promise.all([
-    getAdminToolsView(filters, access),
-    getAdminToolCategoryOptions(access),
+    getAdminToolsView(filters, admin),
+    getAdminToolCategoryOptions(admin),
   ]);
 
   return (
@@ -67,7 +56,10 @@ export default async function AdminToolsPage({
         <ToolAdminFilters categories={categories} />
       </Suspense>
 
-      <ToolAdminTable items={result.items} />
+      <ToolAdminTable
+        items={result.items}
+        canManageToolProfiles={canManageToolProfiles(admin)}
+      />
 
       {result.total === 0 ? (
         <EmptyState

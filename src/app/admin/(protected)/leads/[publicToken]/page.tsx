@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AdminAccessGate } from "@/features/admin/components/AdminAccessGate";
 import { AdminEmailEventsTable } from "@/features/admin/components/AdminEmailEventsTable";
 import { AdminLeadActions } from "@/features/admin/components/AdminLeadActions";
 import { AdminLeadStatusChip } from "@/features/admin/components/AdminLeadStatusChip";
@@ -24,35 +23,24 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getAdminAccessFromRequest } from "@/server/admin/admin-access";
+import { getAuthenticatedAdmin } from "@/server/admin/admin-auth";
+import { canManageLeads } from "@/server/admin/admin-permissions";
 import { getAdminLeadDetailView } from "@/server/services/admin-dashboard.service";
 
 type AdminLeadDetailPageProps = {
   params: Promise<{ publicToken: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function readAdminKey(
-  searchParams: Record<string, string | string[] | undefined>,
-): string | null {
-  const value = searchParams.admin_key;
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
-}
 
 export default async function AdminLeadDetailPage({
   params,
-  searchParams,
 }: AdminLeadDetailPageProps) {
-  const query = await searchParams;
-  const hasAccess = await getAdminAccessFromRequest({
-    adminKey: readAdminKey(query),
-  });
-  if (!hasAccess) {
-    return <AdminAccessGate />;
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return null;
   }
 
   const { publicToken } = await params;
-  const detail = await getAdminLeadDetailView(publicToken);
+  const detail = await getAdminLeadDetailView(publicToken, admin);
   if (!detail) {
     notFound();
   }
@@ -312,6 +300,7 @@ export default async function AdminLeadDetailPage({
         emailDeliveryStatus={detail.emailDeliveryStatus}
         consentToFollowUp={detail.lead.consentToFollowUp}
         hasPdf={detail.report.hasPdf}
+        canManageLeads={canManageLeads(admin)}
       />
     </div>
   );

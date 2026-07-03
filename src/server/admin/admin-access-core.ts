@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+/** @deprecated Module 18A — replaced by Supabase Auth session cookies */
 export const ADMIN_SESSION_COOKIE = "vyken_admin_session";
 const SESSION_SALT = "vyken-admin-v1";
 
@@ -8,6 +9,10 @@ export class AdminAccessError extends Error {
     super(message);
     this.name = "AdminAccessError";
   }
+}
+
+export function allowLegacyAdminKeyAccess(): boolean {
+  return process.env.ALLOW_LEGACY_ADMIN_KEY === "true";
 }
 
 export function getConfiguredAdminDashboardKey(): string | undefined {
@@ -33,12 +38,19 @@ function safeCompare(a: string, b: string): boolean {
   return timingSafeEqual(bufA, bufB);
 }
 
-export type AdminAccessInput = {
+export type LegacyAdminAccessInput = {
   adminKey?: string | null;
   sessionCookie?: string | null;
 };
 
-export function verifyAdminAccess(input: AdminAccessInput): boolean {
+/** Legacy key gate — disabled unless ALLOW_LEGACY_ADMIN_KEY=true */
+export function verifyLegacyAdminAccess(
+  input: LegacyAdminAccessInput,
+): boolean {
+  if (!allowLegacyAdminKeyAccess()) {
+    return false;
+  }
+
   const configuredKey = getConfiguredAdminDashboardKey();
   if (!configuredKey) {
     return false;
@@ -59,4 +71,9 @@ export function verifyAdminAccess(input: AdminAccessInput): boolean {
 
 export function buildAdminSessionCookieValue(adminKey: string): string {
   return deriveAdminSessionToken(adminKey);
+}
+
+/** @deprecated Use verifyLegacyAdminAccess */
+export function verifyAdminAccess(input: LegacyAdminAccessInput): boolean {
+  return verifyLegacyAdminAccess(input);
 }

@@ -10,20 +10,26 @@ import type { AdminToolListItem } from "@/features/tool-admin/types";
 
 type ToolAdminTableProps = {
   items: AdminToolListItem[];
+  canManageToolProfiles: boolean;
 };
 
-export function ToolAdminTable({ items }: ToolAdminTableProps) {
+export function ToolAdminTable({
+  items,
+  canManageToolProfiles,
+}: ToolAdminTableProps) {
   return (
     <AdminTableShell
       title="AI tool profiles"
       description="Published profiles power public tool selection, scoring, and reports."
       actions={
-        <Link
-          href="/admin/tools/new"
-          className="bg-primary text-primary-foreground inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium hover:opacity-90"
-        >
-          Add tool
-        </Link>
+        canManageToolProfiles ? (
+          <Link
+            href="/admin/tools/new"
+            className="bg-primary text-primary-foreground inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium hover:opacity-90"
+          >
+            Add tool
+          </Link>
+        ) : null
       }
     >
       <table className="w-full min-w-[56rem] text-left text-sm">
@@ -97,12 +103,14 @@ export function ToolAdminTable({ items }: ToolAdminTableProps) {
                     >
                       View
                     </Link>
-                    <Link
-                      href={`/admin/tools/${item.slug}/edit`}
-                      className="text-primary font-medium hover:underline"
-                    >
-                      Edit
-                    </Link>
+                    {canManageToolProfiles ? (
+                      <Link
+                        href={`/admin/tools/${item.slug}/edit`}
+                        className="text-primary font-medium hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    ) : null}
                   </div>
                 </td>
               </tr>

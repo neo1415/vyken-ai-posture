@@ -10,7 +10,13 @@ import {
   ToolAdminValidationError,
   validateToolSlugForAdmin,
 } from "@/features/tool-admin/validation";
-import { requireAdminAccess } from "@/server/admin/admin-access";
+import type { AuthenticatedAdmin } from "@/server/admin/admin-permissions";
+import {
+  assertPermission,
+  canManageToolProfiles,
+  canPublishToolProfiles,
+  canViewAdminDashboard,
+} from "@/server/admin/admin-permissions";
 import {
   createAdminTool,
   createToolProfileDraft,
@@ -29,36 +35,39 @@ export class ToolAdminServiceError extends Error {
   }
 }
 
-type AdminAccessInput = { adminKey?: string | null };
+function ensureCanView(admin: AuthenticatedAdmin): void {
+  assertPermission(canViewAdminDashboard(admin));
+}
 
 export async function getAdminToolsView(
   input: AdminToolListFilters,
-  access?: AdminAccessInput,
+  admin: AuthenticatedAdmin,
 ): Promise<AdminToolListResult> {
-  await requireAdminAccess(access);
+  ensureCanView(admin);
   return getAdminToolList(input);
 }
 
 export async function getAdminToolDetailView(
   toolSlug: string,
-  access?: AdminAccessInput,
+  admin: AuthenticatedAdmin,
 ): Promise<AdminToolDetail | null> {
-  await requireAdminAccess(access);
+  ensureCanView(admin);
   validateToolSlugForAdmin(toolSlug);
   return getAdminToolDetailBySlug(toolSlug.trim());
 }
 
 export async function getAdminToolCategoryOptions(
-  access?: AdminAccessInput,
+  admin: AuthenticatedAdmin,
 ): Promise<AdminToolCategoryOption[]> {
-  await requireAdminAccess(access);
+  ensureCanView(admin);
   return getAdminToolCategories();
 }
 
 export async function createAdminToolProfile(
   input: Parameters<typeof createAdminTool>[0],
+  admin: AuthenticatedAdmin,
 ): Promise<{ slug: string }> {
-  await requireAdminAccess();
+  assertPermission(canManageToolProfiles(admin));
   try {
     return await createAdminTool(input);
   } catch (error) {
@@ -70,8 +79,9 @@ export async function createAdminToolProfile(
 
 export async function updateAdminToolProfile(
   input: Parameters<typeof updateToolProfileDraft>[0],
+  admin: AuthenticatedAdmin,
 ): Promise<{ slug: string; versionLabel: string }> {
-  await requireAdminAccess();
+  assertPermission(canManageToolProfiles(admin));
   validateToolSlugForAdmin(input.toolSlug);
   try {
     return await updateToolProfileDraft(input);
@@ -85,11 +95,11 @@ export async function updateAdminToolProfile(
   }
 }
 
-export async function publishAdminToolProfile(input: {
-  toolSlug: string;
-  versionLabel: string;
-}): Promise<{ slug: string; versionLabel: string }> {
-  await requireAdminAccess();
+export async function publishAdminToolProfile(
+  input: { toolSlug: string; versionLabel: string },
+  admin: AuthenticatedAdmin,
+): Promise<{ slug: string; versionLabel: string }> {
+  assertPermission(canPublishToolProfiles(admin));
   validateToolSlugForAdmin(input.toolSlug);
   try {
     return await publishToolProfileVersion(input);
@@ -102,10 +112,11 @@ export async function publishAdminToolProfile(input: {
   }
 }
 
-export async function unpublishAdminToolProfile(input: {
-  toolSlug: string;
-}): Promise<{ slug: string }> {
-  await requireAdminAccess();
+export async function unpublishAdminToolProfile(
+  input: { toolSlug: string },
+  admin: AuthenticatedAdmin,
+): Promise<{ slug: string }> {
+  assertPermission(canPublishToolProfiles(admin));
   validateToolSlugForAdmin(input.toolSlug);
   try {
     return await unpublishToolProfileVersion(input);

@@ -5,56 +5,77 @@ import { cookies } from "next/headers";
 import { serverEnv } from "@/lib/config/env.server";
 
 import {
-  AdminAccessError,
+  getAuthenticatedAdmin,
+  requireAuthenticatedAdmin,
+  AdminAuthError,
+} from "./admin-auth";
+import {
   ADMIN_SESSION_COOKIE,
-  getConfiguredAdminDashboardKey,
-  isAdminDashboardConfigured,
-  verifyAdminAccess,
+  allowLegacyAdminKeyAccess,
 } from "./admin-access-core";
+import type { AuthenticatedAdmin } from "./admin-permissions";
 
 export {
   ADMIN_SESSION_COOKIE,
   AdminAccessError,
+  allowLegacyAdminKeyAccess,
   buildAdminSessionCookieValue,
   deriveAdminSessionToken,
   isAdminDashboardConfigured,
-  verifyAdminAccess,
+  verifyLegacyAdminAccess,
 } from "./admin-access-core";
+
+export {
+  AdminAuthError,
+  getAuthenticatedAdmin,
+  requireAuthenticatedAdmin,
+  mapAuthConfigError,
+} from "./admin-auth";
+
+export type { AuthenticatedAdmin } from "./admin-permissions";
 
 export async function getAdminAccessFromRequest(input?: {
   adminKey?: string | null;
 }): Promise<boolean> {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? null;
-
-  return verifyAdminAccess({
-    adminKey: input?.adminKey ?? null,
-    sessionCookie,
-  });
+  const admin = await getAuthenticatedAdmin(input);
+  return admin != null;
 }
 
 export async function requireAdminAccess(input?: {
   adminKey?: string | null;
-}): Promise<void> {
-  if (serverEnv.NODE_ENV === "production" && !isAdminDashboardConfigured()) {
-    throw new AdminAccessError(
-      "Admin dashboard is not configured. Set ADMIN_DASHBOARD_KEY.",
-    );
-  }
+}): Promise<AuthenticatedAdmin> {
+  return requireAuthenticatedAdmin(input);
+}
 
-  const allowed = await getAdminAccessFromRequest(input);
-  if (!allowed) {
-    throw new AdminAccessError("Admin access denied.");
-  }
+export async function getAdminSessionFromRequest(input?: {
+  adminKey?: string | null;
+}): Promise<AuthenticatedAdmin | null> {
+  return getAuthenticatedAdmin(input);
 }
 
 export function assertAdminDashboardConfiguredForProduction(): void {
-  if (
-    serverEnv.NODE_ENV === "production" &&
-    !getConfiguredAdminDashboardKey()
-  ) {
-    throw new AdminAccessError(
-      "Admin dashboard is not configured. Set ADMIN_DASHBOARD_KEY.",
+  if (serverEnv.NODE_ENV !== "production") {
+    return;
+  }
+
+  const hasSupabaseAuth =
+    Boolean(serverEnv.NEXT_PUBLIC_SUPABASE_URL?.trim()) &&
+    Boolean(serverEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim());
+
+  if (!hasSupabaseAuth && !allowLegacyAdminKeyAccess()) {
+    throw new AdminAuthError(
+      "Admin authentication is not configured for production.",
     );
   }
+}
+
+export async function clearLegacyAdminSessionCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/admin",
+    maxAge: 0,
+  });
 }

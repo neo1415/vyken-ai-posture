@@ -18,6 +18,8 @@ Business logic that runs only on the server.
 - `adminDashboardService` (Module 15)
 - `toolAdminService` (Module 16)
 - `eventTrackingService` (Module 17)
+- Admin auth via `getAuthenticatedAdmin` / `requireAuthenticatedAdmin` (Module 18A)
+- Admin auth via `getAuthenticatedAdmin` / `requireAuthenticatedAdmin` (Module 18A)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)

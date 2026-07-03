@@ -131,7 +131,12 @@ export async function trackAdminAuditEvent(
       return;
     }
 
-    const metadata = sanitizeEventMetadata(input.metadata);
+    const metadata = sanitizeEventMetadata({
+      ...input.metadata,
+      ...(input.admin
+        ? { adminEmail: input.admin.email, adminRole: input.admin.role }
+        : {}),
+    });
     assertMetadataSize(metadata);
 
     if (input.action === "admin_lead_viewed" && input.entityId) {
@@ -147,6 +152,7 @@ export async function trackAdminAuditEvent(
 
     await createAuditEvent({
       actorType: "admin",
+      actorAdminUserId: input.admin?.id ?? null,
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId ?? null,

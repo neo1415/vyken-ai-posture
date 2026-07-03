@@ -27,6 +27,10 @@ const serverEnvSchema = z.object({
   EMAIL_PROVIDER: optionalNonEmptyString,
   VYKEN_INTERNAL_LEAD_EMAIL: optionalNonEmptyString,
   ADMIN_DASHBOARD_KEY: optionalNonEmptyString,
+  ALLOW_LEGACY_ADMIN_KEY: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((value) => value === "true"),
   BOOK_CALL_URL: optionalNonEmptyString,
   VYKEN_GUARD_URL: optionalNonEmptyString,
   VYKEN_REGISTRATION_URL: optionalNonEmptyString,
@@ -50,6 +54,7 @@ function parseServerEnv() {
     EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
     VYKEN_INTERNAL_LEAD_EMAIL: process.env.VYKEN_INTERNAL_LEAD_EMAIL,
     ADMIN_DASHBOARD_KEY: process.env.ADMIN_DASHBOARD_KEY,
+    ALLOW_LEGACY_ADMIN_KEY: process.env.ALLOW_LEGACY_ADMIN_KEY,
     BOOK_CALL_URL: process.env.BOOK_CALL_URL,
     VYKEN_GUARD_URL: process.env.VYKEN_GUARD_URL,
     VYKEN_REGISTRATION_URL: process.env.VYKEN_REGISTRATION_URL,

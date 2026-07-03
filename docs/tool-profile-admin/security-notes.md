@@ -1,12 +1,16 @@
 # Tool Profile Admin — Security Notes
 
-## Admin gate reuse
+## Admin authentication (Module 18A)
 
-Module 16 does **not** introduce a second auth system. All `/admin/tools` pages and `tool-admin` server actions use `requireAdminAccess()` from Module 15.
+Module 16/18A use the shared admin auth system. All `/admin/tools` pages and `tool-admin` server actions require:
 
-- Admin key is never logged
-- Service role keys are never exposed in UI or view models
-- Cookie is HTTP-only, scoped to `/admin`, 8-hour session
+1. Valid Supabase Auth session
+2. Active `admin_users` row
+3. Role permission for write actions (`editor` or `superadmin`)
+
+Read-only `viewer` role can list and view tools but cannot create, edit, or publish.
+
+See `docs/admin-auth/security-notes.md`.
 
 ## No public profile editing
 
@@ -18,23 +22,10 @@ View models expose `slug` and `versionLabel` only. Internal UUIDs stay in reposi
 
 ## Validation
 
-- Zod schemas for slugs, enums, text length, URLs, and script-tag rejection
-- Structured profile fields — not arbitrary JSON from the client
-- Category must match existing `ai_tool_categories.slug`
+- Slug format validated server-side
+- URLs sanitized for tool profile fields
+- Publish/unpublish require explicit server action + permission check
 
-## No broad RLS
+## Service role
 
-Admin access is enforced in server code, not via new permissive RLS policies on tool tables.
-
-## No external enrichment
-
-No web scraping, vendor APIs, or AI-generated profile content in admin forms.
-
-## Publishing impact
-
-Publishing changes what **future** assessments read. Historical `assessment_selected_tools.tool_profile_version_id` references are preserved; old reports are not regenerated automatically.
-
-## Deferred hardening
-
-- Production-grade auth (SSO, roles) replaces the temporary key gate in a future module
-- Structured `sources` JSONB editor with URL validation
+Supabase service role is used only for private PDF storage (Module 13B), not for admin login.

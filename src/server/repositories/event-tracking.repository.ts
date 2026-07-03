@@ -57,6 +57,7 @@ export type CreateAuditEventInput = {
   entityType: string;
   entityId?: string | null;
   metadata?: SafeEventMetadata | null;
+  actorAdminUserId?: string | null;
 };
 
 export async function createCtaEvent(
@@ -131,6 +132,7 @@ export async function createAuditEvent(
   const db = getDb();
 
   await db.insert(auditLogs).values({
+    actorAdminUserId: input.actorAdminUserId ?? null,
     actorType: input.actorType,
     action: input.action,
     entityType: input.entityType,

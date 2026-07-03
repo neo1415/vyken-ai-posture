@@ -78,6 +78,8 @@ export const ALLOWED_EVENT_METADATA_KEYS = [
   "unknownToolCount",
   "hasNotSure",
   "forceResend",
+  "adminEmail",
+  "adminRole",
 ] as const;
 
 export const RESULT_FOLLOW_UP_COPY = {

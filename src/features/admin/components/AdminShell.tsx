@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { AdminLogoutButton } from "@/features/admin-auth/components/AdminLogoutButton";
+import type { AdminSessionView } from "@/features/admin-auth/types";
 import { Badge } from "@/components/ui/Badge";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { APP_NAME } from "@/lib/constants/app";
@@ -8,10 +10,11 @@ import { cn } from "@/lib/utils/cn";
 
 type AdminShellProps = {
   children: ReactNode;
+  session: AdminSessionView;
   className?: string;
 };
 
-export function AdminShell({ children, className }: AdminShellProps) {
+export function AdminShell({ children, session, className }: AdminShellProps) {
   return (
     <div className={cn("bg-background flex min-h-screen flex-col", className)}>
       <header className="border-border bg-surface-elevated border-b">
@@ -42,7 +45,13 @@ export function AdminShell({ children, className }: AdminShellProps) {
                 Tools
               </Link>
             </nav>
-            <Badge variant="warning">Temporary admin gate</Badge>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground hidden sm:inline">
+                {session.email}
+              </span>
+              <Badge variant="secondary">{session.displayRole}</Badge>
+              <AdminLogoutButton />
+            </div>
           </div>
         </PageContainer>
       </header>
