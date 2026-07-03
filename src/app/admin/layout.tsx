@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-import { AdminShell } from "@/components/layout/AdminShell";
+import { AdminShell } from "@/features/admin/components/AdminShell";
 
 type AdminLayoutProps = {
   children: ReactNode;
 };
 
-/** Admin auth and authorization are implemented in a dedicated future module. */
+/** Temporary admin gate — see docs/admin-dashboard/security-notes.md */
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return <AdminShell>{children}</AdminShell>;
 }

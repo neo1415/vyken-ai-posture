@@ -15,6 +15,7 @@ Business logic that runs only on the server.
 - `reportContextService` (Module 12)
 - `pdfReportService` (Module 13–13B)
 - `emailDeliveryService` (Module 14)
+- `adminDashboardService` (Module 15)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
