@@ -35,6 +35,12 @@ export function AdminShell({ children, className }: AdminShellProps) {
               >
                 Leads
               </Link>
+              <Link
+                href="/admin/tools"
+                className="text-foreground hover:text-primary font-medium"
+              >
+                Tools
+              </Link>
             </nav>
             <Badge variant="warning">Temporary admin gate</Badge>
           </div>
