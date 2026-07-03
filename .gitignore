@@ -41,3 +41,4 @@ next-env.d.ts
 
 # generated report PDFs (local dev storage — not production-ready)
 /storage/reports/
+/storage/emails-dev/

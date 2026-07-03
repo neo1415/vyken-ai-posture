@@ -28,6 +28,7 @@ Read `database-boundary.ts` before implementing repositories.
 | `assessmentRecommendationsRepository` | 9      |
 | `leadsRepository`                     | 11     |
 | `reportsRepository`                   | 12–13  |
+| `emailEventsRepository`               | 14     |
 | `adminRepository`                     | 15     |
 
 Implementation begins when the corresponding feature module is built.

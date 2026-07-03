@@ -14,6 +14,7 @@ Business logic that runs only on the server.
 - `leadCaptureService` (Module 11)
 - `reportContextService` (Module 12)
 - `pdfReportService` (Module 13–13B)
+- `emailDeliveryService` (Module 14)
 - `scoringService` (legacy placeholder)
 - `signalExtractionService`
 - `recommendationService` (legacy placeholder — use `assessmentRecommendationsService`)
