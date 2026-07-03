@@ -50,7 +50,7 @@ export function AdminLeadFilters() {
           defaultValue={searchParams.get("search") ?? ""}
           placeholder="Email, company, or name"
           maxLength={120}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         />
       </label>
 
@@ -60,7 +60,7 @@ export function AdminLeadFilters() {
           name="riskLevel"
           defaultValue={searchParams.get("riskLevel") ?? ""}
           onChange={(event) => updateFilter("riskLevel", event.target.value)}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {ADMIN_RISK_FILTER_OPTIONS.map((option) => (
@@ -77,7 +77,7 @@ export function AdminLeadFilters() {
           name="emailStatus"
           defaultValue={searchParams.get("emailStatus") ?? ""}
           onChange={(event) => updateFilter("emailStatus", event.target.value)}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {ADMIN_EMAIL_STATUS_FILTER_OPTIONS.map((option) => (
@@ -94,7 +94,7 @@ export function AdminLeadFilters() {
           name="leadStatus"
           defaultValue={searchParams.get("leadStatus") ?? ""}
           onChange={(event) => updateFilter("leadStatus", event.target.value)}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {ADMIN_LEAD_STATUS_OPTIONS.map((option) => (

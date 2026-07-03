@@ -156,12 +156,14 @@ export function AssessmentWizard({
     setClientError(null);
     setSectionErrors({});
     setSectionIndex((index) => Math.min(index + 1, activeSections.length - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleBack() {
     setClientError(null);
     setSectionErrors({});
     setSectionIndex((index) => Math.max(index - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

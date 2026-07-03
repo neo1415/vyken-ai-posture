@@ -40,7 +40,7 @@ export function ToolAdminFilters({ categories }: ToolAdminFiltersProps) {
           defaultValue={searchParams.get("search") ?? ""}
           placeholder="Name or slug"
           maxLength={120}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         />
       </label>
 
@@ -49,7 +49,7 @@ export function ToolAdminFilters({ categories }: ToolAdminFiltersProps) {
         <select
           name="categorySlug"
           defaultValue={searchParams.get("categorySlug") ?? ""}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {categories.map((category) => (
@@ -65,7 +65,7 @@ export function ToolAdminFilters({ categories }: ToolAdminFiltersProps) {
         <select
           name="status"
           defaultValue={searchParams.get("status") ?? ""}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {TOOL_STATUS_FILTER_OPTIONS.map((status) => (
@@ -81,7 +81,7 @@ export function ToolAdminFilters({ categories }: ToolAdminFiltersProps) {
         <select
           name="confidenceLevel"
           defaultValue={searchParams.get("confidenceLevel") ?? ""}
-          className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2"
+          className="border-border bg-background text-foreground focus:ring-primary/30 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:outline-none"
         >
           <option value="">All</option>
           {CONFIDENCE_FILTER_OPTIONS.map((level) => (

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AdminShell } from "@/features/admin/components/AdminShell";
@@ -17,7 +18,12 @@ export default async function ProtectedAdminLayout({
     redirect("/admin/login");
   }
 
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-pathname") ?? "/admin";
+
   return (
-    <AdminShell session={toAdminSessionView(admin)}>{children}</AdminShell>
+    <AdminShell session={toAdminSessionView(admin)} activePath={pathname}>
+      {children}
+    </AdminShell>
   );
 }

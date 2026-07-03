@@ -17,7 +17,7 @@ export default function ErrorPage({ reset }: ErrorPageProps) {
       <button
         type="button"
         onClick={reset}
-        className="bg-primary text-primary-foreground mt-6 rounded-lg px-4 py-2 text-sm font-medium"
+        className="bg-primary text-primary-foreground focus-visible:ring-primary/50 mt-6 rounded-lg px-4 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         Try again
       </button>

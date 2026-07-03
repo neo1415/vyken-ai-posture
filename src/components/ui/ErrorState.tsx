@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils/cn";
 
@@ -19,6 +19,8 @@ export function ErrorState({
   variant = "default",
   className,
 }: ErrorStateProps) {
+  const titleId = useId();
+
   return (
     <section
       role="alert"
@@ -29,12 +31,9 @@ export function ErrorState({
         variant === "inline" && "border-danger/30 bg-surface-elevated",
         className,
       )}
-      aria-labelledby="error-state-title"
+      aria-labelledby={titleId}
     >
-      <h2
-        id="error-state-title"
-        className="text-foreground text-lg font-semibold"
-      >
+      <h2 id={titleId} className="text-foreground text-lg font-semibold">
         {title}
       </h2>
       <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">

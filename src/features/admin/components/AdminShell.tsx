@@ -8,13 +8,40 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { APP_NAME } from "@/lib/constants/app";
 import { cn } from "@/lib/utils/cn";
 
+type AdminNavLinkProps = {
+  href: string;
+  label: string;
+  active?: boolean;
+};
+
+function AdminNavLink({ href, label, active }: AdminNavLinkProps) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "font-medium transition-colors",
+        active ? "text-primary" : "text-foreground hover:text-primary",
+      )}
+    >
+      {label}
+    </Link>
+  );
+}
+
 type AdminShellProps = {
   children: ReactNode;
   session: AdminSessionView;
+  activePath?: string;
   className?: string;
 };
 
-export function AdminShell({ children, session, className }: AdminShellProps) {
+export function AdminShell({
+  children,
+  session,
+  activePath,
+  className,
+}: AdminShellProps) {
   return (
     <div className={cn("bg-background flex min-h-screen flex-col", className)}>
       <header className="border-border bg-surface-elevated border-b">
@@ -32,18 +59,16 @@ export function AdminShell({ children, session, className }: AdminShellProps) {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <nav aria-label="Admin navigation" className="flex gap-4 text-sm">
-              <Link
+              <AdminNavLink
                 href="/admin/leads"
-                className="text-foreground hover:text-primary font-medium"
-              >
-                Leads
-              </Link>
-              <Link
+                label="Leads"
+                active={activePath?.startsWith("/admin/leads")}
+              />
+              <AdminNavLink
                 href="/admin/tools"
-                className="text-foreground hover:text-primary font-medium"
-              >
-                Tools
-              </Link>
+                label="Tools"
+                active={activePath?.startsWith("/admin/tools")}
+              />
             </nav>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="text-muted-foreground hidden sm:inline">

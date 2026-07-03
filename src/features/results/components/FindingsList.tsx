@@ -13,6 +13,10 @@ type FindingsListProps = {
 };
 
 export function FindingsList({ findings }: FindingsListProps) {
+  if (findings.length === 0) {
+    return null;
+  }
+
   return (
     <section className={resultSectionClasses} aria-labelledby="findings-title">
       <div className="space-y-2">

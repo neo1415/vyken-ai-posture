@@ -15,6 +15,10 @@ type RecommendationsListProps = {
 export function RecommendationsList({
   recommendations,
 }: RecommendationsListProps) {
+  if (recommendations.length === 0) {
+    return null;
+  }
+
   return (
     <section
       className={resultSectionClasses}

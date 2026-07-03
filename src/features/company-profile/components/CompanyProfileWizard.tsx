@@ -166,11 +166,13 @@ export function CompanyProfileWizard() {
     setCurrentStep((step) =>
       Math.min(step + 1, COMPANY_PROFILE_INTERNAL_STEP_COUNT - 1),
     );
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goBack = () => {
     setClientError(null);
     setCurrentStep((step) => Math.max(step - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleConcern = (value: string, checked: boolean) => {
