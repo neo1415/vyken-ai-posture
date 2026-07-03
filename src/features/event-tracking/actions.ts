@@ -11,6 +11,12 @@ import {
   parseRequestReportEmailFormData,
   parseTrackCtaClickFormData,
 } from "@/features/event-tracking/validation";
+import {
+  checkRateLimit,
+  cleanupExpiredEntries,
+  CTA_EVENT_RATE_LIMIT,
+  EMAIL_SEND_RATE_LIMIT,
+} from "@/lib/security/rate-limit";
 import { getAssessmentSessionByPublicToken } from "@/server/repositories/assessment-sessions.repository";
 import { getLatestLeadForAssessment } from "@/server/repositories/leads.repository";
 import {
@@ -37,7 +43,14 @@ export async function trackCtaClickAction(
   formData: FormData,
 ): Promise<EventTrackingActionState> {
   try {
+    cleanupExpiredEntries();
     const parsed = parseTrackCtaClickFormData(formData);
+
+    const rateResult = checkRateLimit(CTA_EVENT_RATE_LIMIT, parsed.publicToken);
+    if (!rateResult.allowed) {
+      return trackingSuccess();
+    }
+
     await trackCtaEvent({
       publicToken: parsed.publicToken,
       destination: parsed.destination,
@@ -58,7 +71,13 @@ export async function requestReportEmailAction(
   formData: FormData,
 ): Promise<RequestReportEmailActionState> {
   try {
+    cleanupExpiredEntries();
     const parsed = parseRequestReportEmailFormData(formData);
+
+    const emailRate = checkRateLimit(EMAIL_SEND_RATE_LIMIT, parsed.publicToken);
+    if (!emailRate.allowed) {
+      return trackingError("Too many requests. Please try again later.");
+    }
     const session = await getAssessmentSessionByPublicToken(parsed.publicToken);
     if (!session) {
       return trackingError("Assessment session could not be verified.");

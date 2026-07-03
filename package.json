@@ -32,7 +32,8 @@
     "verify:module15": "tsx src/lib/db/scripts/verify-module15.ts",
     "verify:module16": "tsx src/lib/db/scripts/verify-module16.ts",
     "verify:module17": "tsx src/lib/db/scripts/verify-module17.ts",
-    "verify:module18a": "tsx src/lib/db/scripts/verify-module18a.ts"
+    "verify:module18a": "tsx src/lib/db/scripts/verify-module18a.ts",
+    "verify:module18b": "tsx src/lib/db/scripts/verify-module18b.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

@@ -21,6 +21,11 @@ import {
 } from "@/server/admin/admin-permissions";
 import { getActiveAdminUserByEmail } from "@/server/repositories/admin-users.repository";
 import {
+  ADMIN_LOGIN_RATE_LIMIT,
+  checkRateLimit,
+  cleanupExpiredEntries,
+} from "@/lib/security/rate-limit";
+import {
   signInWithPassword,
   signOutSupabaseAuth,
 } from "@/lib/supabase/auth-server";
@@ -30,10 +35,21 @@ export async function loginAdminAction(
   formData: FormData,
 ): Promise<AdminLoginFormState> {
   try {
+    cleanupExpiredEntries();
+
     const parsed = validateAdminLoginInput({
       email: formData.get("email"),
       password: formData.get("password"),
     });
+
+    const rateLimitKey = parsed.email.toLowerCase();
+    const rateResult = checkRateLimit(ADMIN_LOGIN_RATE_LIMIT, rateLimitKey);
+    if (!rateResult.allowed) {
+      return {
+        status: "error",
+        message: "Too many login attempts. Please try again later.",
+      };
+    }
 
     const { user, errorMessage } = await signInWithPassword({
       email: parsed.email,
